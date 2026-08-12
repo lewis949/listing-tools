@@ -6,16 +6,13 @@
     <title>Listing Tools | Claude Builder</title>
     <style>
         :root {
-            --bg-base: #0f172a;      /* Slate 900 */
-            --bg-surface: #1e293b;   /* Slate 800 */
-            --bg-input: #0b1120;     /* Darker slate */
-            --text-main: #f1f5f9;    /* Slate 100 */
-            --text-muted: #94a3b8;   /* Slate 400 */
-            --border-color: #334155; /* Slate 700 */
-            --accent: #3b82f6;       /* Blue 500 */
-            --accent-hover: #2563eb; /* Blue 600 */
-            --success: #10b981;      /* Emerald 500 */
-            --radius: 12px;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #ffffff;
+            --text-muted: #cbd5e1;
+            --accent-gradient: linear-gradient(135deg, #f43f5e, #8b5cf6, #3b82f6);
+            --radius: 20px;
         }
 
         * {
@@ -26,7 +23,10 @@
         }
 
         body {
-            background-color: var(--bg-base);
+            /* Animated Aurora Background */
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #172554);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             color: var(--text-main);
             line-height: 1.6;
             min-height: 100vh;
@@ -36,27 +36,31 @@
             align-items: center;
         }
 
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         .header {
             width: 100%;
             max-width: 1200px;
             margin-bottom: 2rem;
+            text-align: center;
         }
 
         .header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(to right, #60a5fa, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.25rem;
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
         }
 
         .header p {
             color: var(--text-muted);
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
 
-        /* Layout Grid */
         .layout-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -71,20 +75,33 @@
             }
         }
 
+        /* Glassmorphism Panel */
         .panel {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius);
-            padding: 2rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
         .panel-title {
             font-size: 1.25rem;
             font-weight: 600;
             margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .panel-title::before {
+            content: '';
+            display: block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
         }
 
         .form-group {
@@ -96,28 +113,31 @@
             font-size: 0.9rem;
             font-weight: 500;
             margin-bottom: 0.5rem;
-            color: var(--text-main);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         input[type="text"], textarea {
             width: 100%;
-            padding: 0.875rem;
-            background-color: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
             color: var(--text-main);
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
 
         input[type="text"]::placeholder, textarea::placeholder {
-            color: #475569;
+            color: rgba(255, 255, 255, 0.3);
         }
 
         input[type="text"]:focus, textarea:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            background: rgba(0, 0, 0, 0.4);
+            border-color: #8b5cf6;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
         }
 
         textarea {
@@ -125,26 +145,22 @@
             min-height: 100px;
         }
 
-        .help-text {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 0.4rem;
-        }
-
-        /* Custom Toggle Switch for 'Is Set?' */
+        /* Toggle Switch */
         .toggle-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: var(--bg-input);
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
             margin-bottom: 1.5rem;
         }
 
         .toggle-container label {
             margin-bottom: 0;
+            color: var(--text-main);
+            text-transform: none;
             font-size: 1rem;
             cursor: pointer;
         }
@@ -152,8 +168,8 @@
         .switch {
             position: relative;
             display: inline-block;
-            width: 44px;
-            height: 24px;
+            width: 50px;
+            height: 28px;
         }
 
         .switch input { 
@@ -166,108 +182,109 @@
             position: absolute;
             cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--border-color);
-            transition: .3s;
-            border-radius: 24px;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 34px;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
             background-color: white;
-            transition: .3s;
+            transition: .4s;
             border-radius: 50%;
         }
 
         input:checked + .slider {
-            background-color: var(--accent);
+            background: var(--accent-gradient);
         }
 
         input:checked + .slider:before {
-            transform: translateX(20px);
+            transform: translateX(22px);
         }
 
-        /* Hidden Set Components field */
         #setComponentsGroup {
             display: none;
-            animation: fadeIn 0.3s ease-in-out;
+            animation: slideDown 0.3s ease-out forwards;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         button.primary-btn {
-            background-color: var(--accent);
+            background: var(--accent-gradient);
             color: white;
             border: none;
-            padding: 1rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 8px;
+            padding: 1.25rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
             width: 100%;
             margin-top: 1rem;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
         }
 
         button.primary-btn:hover {
-            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6);
         }
 
         /* Result Section */
         .result-box {
-            background-color: var(--bg-input);
-            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
             padding: 1.5rem;
-            border-radius: 8px;
+            border-radius: 12px;
             white-space: pre-wrap;
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             color: #e2e8f0;
-            font-size: 0.9rem;
-            line-height: 1.7;
-            height: calc(100% - 130px);
+            font-size: 0.95rem;
+            line-height: 1.8;
+            height: calc(100% - 140px);
             overflow-y: auto;
             margin-bottom: 1.5rem;
         }
 
-        /* Empty state placeholder */
         .empty-state {
             display: flex;
             height: 100%;
             align-items: center;
             justify-content: center;
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.3);
             font-style: italic;
         }
 
         .copy-btn {
-            background-color: var(--border-color);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
             color: white;
-            border: none;
-            padding: 0.875rem 1.5rem;
-            font-size: 0.95rem;
+            border: 1px solid var(--glass-border);
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
             font-weight: 600;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
             width: 100%;
-            display: none; /* Hidden until generated */
+            display: none;
         }
         
         .copy-btn:hover {
-            background-color: #475569;
+            background: var(--glass-highlight);
         }
 
         .copy-btn.success {
-            background-color: var(--success);
+            background: rgba(16, 185, 129, 0.8);
+            border-color: #10b981;
         }
-
     </style>
 </head>
 <body>
@@ -278,21 +295,19 @@
     </div>
 
     <div class="layout-grid">
-        <!-- LEFT COLUMN: Form -->
         <div class="panel">
             <h2 class="panel-title">Product Details</h2>
             <form id="builderForm">
                 <div class="form-group">
                     <label for="itemName">Item Name</label>
-                    <input type="text" id="itemName" placeholder="e.g. Sequin Mini Dress" required>
+                    <input type="text" id="itemName" placeholder="e.g. Orange Dress" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="event">Event</label>
-                    <input type="text" id="event" placeholder="e.g. the Summer Music Festival" required>
+                    <label for="event">Event (Optional)</label>
+                    <input type="text" id="event" placeholder="e.g. the Summer Music Festival">
                 </div>
 
-                <!-- Set Toggle -->
                 <div class="toggle-container">
                     <label for="isSet">Is this product a set?</label>
                     <label class="switch">
@@ -301,33 +316,30 @@
                     </label>
                 </div>
 
-                <!-- Set Components (Hidden by default) -->
                 <div class="form-group" id="setComponentsGroup">
                     <label for="setComponents">Set Components</label>
-                    <textarea id="setComponents" placeholder="e.g. 1x Sequin Top, 1x Mini Skirt, 1x Matching Headband"></textarea>
-                    <div class="help-text">List the items included in the set.</div>
+                    <textarea id="setComponents" placeholder="e.g. 1x Top, 1x Skirt"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="bannedTerms">Banned Terms</label>
-                    <input type="text" id="bannedTerms" placeholder="e.g. Vintage, Designer-inspired" required>
+                    <label for="bannedTerms">Banned Terms (Optional)</label>
+                    <input type="text" id="bannedTerms" placeholder="e.g. Vintage, Designer-inspired">
                 </div>
 
                 <div class="form-group">
-                    <label for="focus">Focus Theme</label>
-                    <input type="text" id="focus" placeholder="e.g. concert, Halloween" required>
+                    <label for="focus">Focus Theme (Optional)</label>
+                    <input type="text" id="focus" placeholder="e.g. concert, Halloween">
                 </div>
 
                 <div class="form-group">
-                    <label for="sizeGuide">Size Guide</label>
-                    <textarea id="sizeGuide" placeholder="Paste accurate measurements here..." required></textarea>
+                    <label for="sizeGuide">Size Guide (Optional)</label>
+                    <textarea id="sizeGuide" placeholder="Paste accurate measurements here..."></textarea>
                 </div>
 
                 <button type="button" class="primary-btn" onclick="generatePrompt()">Generate Prompt</button>
             </form>
         </div>
 
-        <!-- RIGHT COLUMN: Output -->
         <div class="panel">
             <h2 class="panel-title">Generated Prompt</h2>
             <div id="resultOutput" class="result-box">
@@ -338,52 +350,66 @@
     </div>
 
     <script>
-        // Toggle the visibility of the Set Components field
         function toggleSetField() {
             const isSet = document.getElementById('isSet').checked;
             const setGroup = document.getElementById('setComponentsGroup');
-            
             if (isSet) {
                 setGroup.style.display = 'block';
             } else {
                 setGroup.style.display = 'none';
-                // Clear the value if they untick it
                 document.getElementById('setComponents').value = ''; 
             }
         }
 
         function generatePrompt() {
-            // Grab base values
-            const itemName = document.getElementById('itemName').value || "[INSERT PRODUCT NAME]";
-            const event = document.getElementById('event').value || "[INSERT EVENT HERE]";
-            const bannedTerms = document.getElementById('bannedTerms').value || "[INSERT NO USE TERMS]";
-            const focus = document.getElementById('focus').value || "[THEME]";
-            const sizeGuide = document.getElementById('sizeGuide').value || "[INSERT SIZE GUIDE]";
-            
-            // Handle the Set logic
+            // Get raw values and trim whitespace
+            const itemNameRaw = document.getElementById('itemName').value.trim();
+            const eventRaw = document.getElementById('event').value.trim();
+            const bannedTermsRaw = document.getElementById('bannedTerms').value.trim();
+            const focusRaw = document.getElementById('focus').value.trim();
+            const sizeGuideRaw = document.getElementById('sizeGuide').value.trim();
             const isSet = document.getElementById('isSet').checked;
-            let setComponentsText = "";
+            const componentsRaw = document.getElementById('setComponents').value.trim();
+
+            // Handle "a" vs "an" logic based on first letter
+            let itemName = itemNameRaw || "[INSERT PRODUCT NAME]";
+            let firstLetter = itemName.charAt(0).toLowerCase();
+            let article = ['a', 'e', 'i', 'o', 'u'].includes(firstLetter) ? 'an' : 'a';
+
+            // Start building the prompt dynamically
+            let promptText = `This is ${article} ${itemName}`;
             
-            if (isSet) {
-                const components = document.getElementById('setComponents').value || "[INSERT SET COMPONENTS]";
-                setComponentsText = `\n\nThis product is a set that includes the following components: ${components}.`;
+            // Add event if it exists
+            if (eventRaw) {
+                promptText += ` for ${eventRaw}.`;
+            } else {
+                promptText += `.`; // Just end the sentence if no event
             }
 
-            // Build the final template
-            const promptTemplate = `This is a ${itemName} for ${event}.${setComponentsText}
+            // Add set components if it is a set
+            if (isSet && componentsRaw) {
+                promptText += `\n\nThis product is a set that includes the following components: ${componentsRaw}.`;
+            }
 
-Do not use ${bannedTerms} in the title, subtitle, short description, description or bullet points for any channel. These terms can be used in the Generic Keywords for all channels.
+            // Add banned terms conditionally
+            if (bannedTermsRaw) {
+                promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. These terms can be used in the Generic Keywords for all channels.`;
+            }
 
-Please make the listing ${focus}-focused.
+            // Add focus theme conditionally
+            if (focusRaw) {
+                promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
+            }
 
-The size guide is as follows:
-${sizeGuide}`;
+            // Add size guide conditionally
+            if (sizeGuideRaw) {
+                promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
+            }
 
-            // Inject into result box and show copy button
-            document.getElementById('resultOutput').textContent = promptTemplate;
+            // Output the result
+            document.getElementById('resultOutput').textContent = promptText;
             document.getElementById('copyBtn').style.display = 'block';
             
-            // On mobile, scroll down to the result
             if(window.innerWidth < 900) {
                 document.getElementById('resultOutput').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
