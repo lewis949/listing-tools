@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listing Tools | Claude Builder</title>
+    <title>Listing Tools | Suite</title>
     <style>
         :root {
             --glass-bg: rgba(255, 255, 255, 0.05);
@@ -29,7 +29,6 @@
             color: var(--text-main);
             line-height: 1.6;
             min-height: 100vh;
-            padding: 2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -41,11 +40,84 @@
             100% { background-position: 0% 50%; }
         }
 
-        .header {
+        /* Top Navigation */
+        .top-nav {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--glass-highlight);
+            color: var(--text-main);
+        }
+
+        .nav-btn.active {
+            background: rgba(139, 92, 246, 0.2);
+            color: white;
+            border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+
+        /* Main Content Container */
+        .main-content {
             width: 100%;
             max-width: 1200px;
-            margin-bottom: 2rem;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .tool-view {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tool-view.active {
+            display: block;
+        }
+
+        .header {
             text-align: center;
+            margin-bottom: 2rem;
         }
 
         .header h1 {
@@ -60,7 +132,67 @@
             font-size: 1.1rem;
         }
 
-        /* Tabs UI */
+        /* Forms & Inputs Shared */
+        .form-group { margin-bottom: 1.5rem; }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            background: rgba(0, 0, 0, 0.4);
+            border-color: #8b5cf6;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
+
+        textarea { resize: vertical; min-height: 100px; }
+
+        button.primary-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 1.25rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        button.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6); }
+
+        /* Panels Shared */
+        .panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- CLAUDE BUILDER STYLES --- */
         .tabs-container {
             display: flex;
             gap: 1rem;
@@ -97,24 +229,12 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 2rem;
-            width: 100%;
-            max-width: 1200px;
         }
 
         @media (min-width: 900px) {
             .layout-grid {
                 grid-template-columns: 1fr 1fr;
             }
-        }
-
-        .panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius);
-            padding: 2.5rem;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
         .panel-title {
@@ -135,62 +255,10 @@
             background: var(--accent-gradient);
         }
 
-        .form-section {
-            display: none;
-            animation: fadeIn 0.4s ease-out;
-        }
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+        .dynamic-field { display: none; }
 
-        .form-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input[type="text"], textarea {
-            width: 100%;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: var(--text-main);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        input[type="text"]::placeholder, textarea::placeholder {
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        input[type="text"]:focus, textarea:focus {
-            outline: none;
-            background: rgba(0, 0, 0, 0.4);
-            border-color: #8b5cf6;
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        /* Radio Buttons */
         .radio-group {
             display: flex;
             flex-wrap: wrap;
@@ -208,19 +276,13 @@
             gap: 0.5rem;
             cursor: pointer;
             color: var(--text-main);
+            margin-bottom: 0;
             text-transform: none;
             letter-spacing: normal;
-            margin-bottom: 0;
         }
 
-        .custom-radio input {
-            accent-color: #8b5cf6;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
+        .custom-radio input { accent-color: #8b5cf6; width: 18px; height: 18px; cursor: pointer; }
 
-        /* Toggle Switch for Sets */
         .toggle-container {
             display: flex;
             align-items: center;
@@ -240,87 +302,20 @@
             cursor: pointer;
         }
 
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 28px;
-        }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.1); transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background: var(--accent-gradient); }
+        input:checked + .slider:before { transform: translateX(22px); }
 
-        .switch input { 
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255, 255, 255, 0.1);
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background: var(--accent-gradient);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-
-        /* Dynamic Field Animations */
-        .dynamic-field {
-            display: none;
-            animation: slideDown 0.3s ease-out forwards;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        button.primary-btn {
-            background: var(--accent-gradient);
-            color: white;
-            border: none;
-            padding: 1.25rem;
-            font-size: 1.1rem;
-            font-weight: 700;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 1rem;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-        }
-
-        button.primary-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6);
-        }
-
-        /* Result Section */
         .result-box {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--glass-border);
             padding: 1.5rem;
             border-radius: 12px;
             white-space: pre-wrap;
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-family: 'JetBrains Mono', monospace;
             color: #e2e8f0;
             font-size: 0.95rem;
             line-height: 1.8;
@@ -329,14 +324,7 @@
             margin-bottom: 1.5rem;
         }
 
-        .empty-state {
-            display: flex;
-            height: 100%;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255, 255, 255, 0.3);
-            font-style: italic;
-        }
+        .empty-state { display: flex; height: 100%; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.3); font-style: italic; }
 
         .copy-btn {
             background: rgba(255, 255, 255, 0.1);
@@ -348,217 +336,343 @@
             font-weight: 600;
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
             width: 100%;
             display: none;
         }
         
-        .copy-btn:hover {
-            background: var(--glass-highlight);
+        .copy-btn:hover { background: var(--glass-highlight); }
+
+        /* --- HEX CODES STYLES --- */
+        .add-hex-panel {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
 
-        .copy-btn.success {
-            background: rgba(16, 185, 129, 0.8);
-            border-color: #10b981;
+        .add-hex-panel input {
+            width: 250px;
+            padding: 0.8rem 1rem;
         }
+
+        .add-hex-panel button {
+            width: auto;
+            margin-top: 0;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        .hex-category {
+            margin-bottom: 3rem;
+        }
+        
+        .hex-category h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .hex-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .hex-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .hex-card:hover {
+            transform: translateY(-5px);
+            background: var(--glass-highlight);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .hex-swatch {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .hex-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .toast.error {
+            background: rgba(239, 68, 68, 0.9); /* Red for errors */
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Listing Tools</h1>
-        <p>Claude Collaboration Builder</p>
-    </div>
-
-    <div class="layout-grid">
-        <div class="panel">
-            <!-- Tabs -->
-            <div class="tabs-container">
-                <button class="tab-btn active" onclick="switchTab('costumes')" id="btn-costumes">Costumes</button>
-                <button class="tab-btn" onclick="switchTab('tshirts')" id="btn-tshirts">T-Shirts</button>
+    <!-- TOP NAVIGATION -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-logo">Listing Tools</div>
+            <div class="nav-links">
+                <button class="nav-btn active" onclick="switchApp('tool-claude')" id="nav-claude">Claude Builder</button>
+                <button class="nav-btn" onclick="switchApp('tool-hex')" id="nav-hex">Hex Codes</button>
             </div>
-            
-            <h2 class="panel-title">Product Details</h2>
-            
-            <!-- COSTUMES FORM -->
-            <form id="form-costumes" class="form-section active">
-                <div class="form-group">
-                    <label for="c_itemName">Item Name</label>
-                    <input type="text" id="c_itemName" placeholder="e.g. Orange Dress" required>
+        </div>
+    </nav>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast">Copied to clipboard!</div>
+
+    <div class="main-content">
+        
+        <!-- ==========================================
+             TOOL 1: CLAUDE BUILDER 
+        =========================================== -->
+        <div id="tool-claude" class="tool-view active">
+            <div class="header">
+                <h1>Claude Collaboration Builder</h1>
+                <p>Generate perfect AI briefs for your products.</p>
+            </div>
+
+            <div class="layout-grid">
+                <div class="panel">
+                    <div class="tabs-container">
+                        <button class="tab-btn active" onclick="switchBuilderTab('costumes')" id="btn-costumes">Costumes</button>
+                        <button class="tab-btn" onclick="switchBuilderTab('tshirts')" id="btn-tshirts">T-Shirts</button>
+                    </div>
+                    
+                    <h2 class="panel-title">Product Details</h2>
+                    
+                    <!-- COSTUMES FORM -->
+                    <form id="form-costumes" class="form-section active">
+                        <div class="form-group">
+                            <label>Item Name</label>
+                            <input type="text" id="c_itemName" placeholder="e.g. Orange Dress" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Event (Optional)</label>
+                            <input type="text" id="c_event" placeholder="e.g. the Summer Music Festival">
+                        </div>
+                        <div class="toggle-container">
+                            <label>Is this product a set?</label>
+                            <label class="switch">
+                                <input type="checkbox" id="c_isSet" onchange="toggleSetField()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="form-group dynamic-field" id="setComponentsGroup">
+                            <label>Set Components</label>
+                            <textarea id="c_setComponents" placeholder="e.g. 1x Top, 1x Skirt"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Banned Terms (Optional)</label>
+                            <input type="text" id="c_bannedTerms" placeholder="e.g. Vintage, Designer-inspired">
+                        </div>
+                        <div class="form-group">
+                            <label>Focus Theme (Optional)</label>
+                            <input type="text" id="c_focus" placeholder="e.g. concert, Halloween">
+                        </div>
+                        <div class="form-group">
+                            <label>Size Guide (Optional)</label>
+                            <textarea id="c_sizeGuide" placeholder="Paste accurate measurements here..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Extra Details (Optional)</label>
+                            <textarea id="c_extraDetails" placeholder="Any other specific details Claude needs to know..."></textarea>
+                        </div>
+                    </form>
+
+                    <!-- T-SHIRTS FORM -->
+                    <form id="form-tshirts" class="form-section">
+                        <div class="form-group">
+                            <label>T-Shirt Colour</label>
+                            <input type="text" id="t_colour" placeholder="e.g. Black, Neon Pink" required>
+                        </div>
+                        <label>Style</label>
+                        <div class="radio-group">
+                            <label class="custom-radio">
+                                <input type="radio" name="t_style" value="Classic T-Shirt" checked> Classic T-Shirt
+                            </label>
+                            <label class="custom-radio">
+                                <input type="radio" name="t_style" value="Baby Tee"> Baby Tee
+                            </label>
+                        </div>
+                        <label>Print Location</label>
+                        <div class="radio-group">
+                            <label class="custom-radio">
+                                <input type="radio" name="t_printLocation" value="front" onchange="togglePrintFields()" checked> Front Print
+                            </label>
+                            <label class="custom-radio">
+                                <input type="radio" name="t_printLocation" value="back" onchange="togglePrintFields()"> Back Print
+                            </label>
+                            <label class="custom-radio">
+                                <input type="radio" name="t_printLocation" value="both" onchange="togglePrintFields()"> Both
+                            </label>
+                        </div>
+                        <div class="form-group dynamic-field" id="t_frontPrintGroup" style="display: block;">
+                            <label>Front Print Description</label>
+                            <textarea id="t_frontPrint" placeholder="Describe the graphic or text on the front..."></textarea>
+                        </div>
+                        <div class="form-group dynamic-field" id="t_backPrintGroup">
+                            <label>Back Print Description</label>
+                            <textarea id="t_backPrint" placeholder="Describe the graphic or text on the back..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Banned Terms (Optional)</label>
+                            <input type="text" id="t_bannedTerms" placeholder="e.g. Vintage, Designer-inspired">
+                        </div>
+                        <div class="form-group">
+                            <label>Focus Theme (Optional)</label>
+                            <input type="text" id="t_focus" placeholder="e.g. concert, Halloween">
+                        </div>
+                        <div class="form-group">
+                            <label>Size Guide (Optional)</label>
+                            <textarea id="t_sizeGuide" placeholder="Paste accurate measurements here..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Extra Details (Optional)</label>
+                            <textarea id="t_extraDetails" placeholder="Any other specific details Claude needs to know..."></textarea>
+                        </div>
+                    </form>
+
+                    <button type="button" class="primary-btn" onclick="generatePrompt()">Generate Prompt</button>
                 </div>
 
-                <div class="form-group">
-                    <label for="c_event">Event (Optional)</label>
-                    <input type="text" id="c_event" placeholder="e.g. the Summer Music Festival">
+                <div class="panel">
+                    <h2 class="panel-title">Generated Prompt</h2>
+                    <div id="resultOutput" class="result-box">
+                        <div class="empty-state">Fill out the form to generate your prompt...</div>
+                    </div>
+                    <button id="copyBtn" class="copy-btn" onclick="copyPrompt()">Copy to Clipboard</button>
                 </div>
-
-                <div class="toggle-container">
-                    <label for="c_isSet">Is this product a set?</label>
-                    <label class="switch">
-                        <input type="checkbox" id="c_isSet" onchange="toggleSetField()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="form-group dynamic-field" id="setComponentsGroup">
-                    <label for="c_setComponents">Set Components</label>
-                    <textarea id="c_setComponents" placeholder="e.g. 1x Top, 1x Skirt"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="c_bannedTerms">Banned Terms (Optional)</label>
-                    <input type="text" id="c_bannedTerms" placeholder="e.g. Vintage, Designer-inspired">
-                </div>
-
-                <div class="form-group">
-                    <label for="c_focus">Focus Theme (Optional)</label>
-                    <input type="text" id="c_focus" placeholder="e.g. concert, Halloween">
-                </div>
-
-                <div class="form-group">
-                    <label for="c_sizeGuide">Size Guide (Optional)</label>
-                    <textarea id="c_sizeGuide" placeholder="Paste accurate measurements here..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="c_extraDetails">Extra Details (Optional)</label>
-                    <textarea id="c_extraDetails" placeholder="Any other specific details Claude needs to know..."></textarea>
-                </div>
-            </form>
-
-            <!-- T-SHIRTS FORM -->
-            <form id="form-tshirts" class="form-section">
-                
-                <div class="form-group">
-                    <label for="t_colour">T-Shirt Colour</label>
-                    <input type="text" id="t_colour" placeholder="e.g. Black, Neon Pink" required>
-                </div>
-
-                <label>Style</label>
-                <div class="radio-group">
-                    <label class="custom-radio">
-                        <input type="radio" name="t_style" id="t_isClassic" value="Classic T-Shirt" checked>
-                        Classic T-Shirt
-                    </label>
-                    <label class="custom-radio">
-                        <input type="radio" name="t_style" id="t_isBabyTee" value="Baby Tee">
-                        Baby Tee
-                    </label>
-                </div>
-
-                <label>Print Location</label>
-                <div class="radio-group">
-                    <label class="custom-radio">
-                        <input type="radio" name="t_printLocation" value="front" onchange="togglePrintFields()" checked>
-                        Front Print
-                    </label>
-                    <label class="custom-radio">
-                        <input type="radio" name="t_printLocation" value="back" onchange="togglePrintFields()">
-                        Back Print
-                    </label>
-                    <label class="custom-radio">
-                        <input type="radio" name="t_printLocation" value="both" onchange="togglePrintFields()">
-                        Both
-                    </label>
-                </div>
-
-                <div class="form-group dynamic-field" id="t_frontPrintGroup" style="display: block;">
-                    <label for="t_frontPrint">Front Print Description</label>
-                    <textarea id="t_frontPrint" placeholder="Describe the graphic or text on the front..."></textarea>
-                </div>
-
-                <div class="form-group dynamic-field" id="t_backPrintGroup">
-                    <label for="t_backPrint">Back Print Description</label>
-                    <textarea id="t_backPrint" placeholder="Describe the graphic or text on the back..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="t_bannedTerms">Banned Terms (Optional)</label>
-                    <input type="text" id="t_bannedTerms" placeholder="e.g. Vintage, Designer-inspired">
-                </div>
-
-                <div class="form-group">
-                    <label for="t_focus">Focus Theme (Optional)</label>
-                    <input type="text" id="t_focus" placeholder="e.g. concert, Halloween">
-                </div>
-
-                <div class="form-group">
-                    <label for="t_sizeGuide">Size Guide (Optional)</label>
-                    <textarea id="t_sizeGuide" placeholder="Paste accurate measurements here..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="t_extraDetails">Extra Details (Optional)</label>
-                    <textarea id="t_extraDetails" placeholder="Any other specific details Claude needs to know..."></textarea>
-                </div>
-            </form>
-
-            <!-- Generate Button (Shared) -->
-            <button type="button" class="primary-btn" onclick="generatePrompt()">Generate Prompt</button>
+            </div>
         </div>
 
-        <div class="panel">
-            <h2 class="panel-title">Generated Prompt</h2>
-            <div id="resultOutput" class="result-box">
-                <div class="empty-state">Fill out the form to generate your prompt...</div>
+        <!-- ==========================================
+             TOOL 2: HEX CODES 
+        =========================================== -->
+        <div id="tool-hex" class="tool-view">
+            <div class="header">
+                <h1>Colour Hex Codes</h1>
+                <p>Click any swatch below to instantly copy its Hex Code.</p>
             </div>
-            <button id="copyBtn" class="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
+            
+            <!-- ADD NEW HEX UI -->
+            <div class="add-hex-panel">
+                <input type="text" id="newHexInput" placeholder="Enter Hex (e.g. #FF5500)" maxlength="7">
+                <button class="primary-btn" onclick="addCustomHex()">+ Add Colour</button>
+            </div>
+
+            <div class="panel" style="max-width: 1000px; margin: 0 auto;">
+                <div id="hex-container">
+                    <!-- JavaScript will inject the hex grid here -->
+                </div>
+            </div>
         </div>
+
     </div>
 
+    <!-- MAIN SCRIPT -->
     <script>
+        /* ---------------------------------------------------
+           APP NAVIGATION LOGIC
+        --------------------------------------------------- */
+        function switchApp(appId) {
+            document.querySelectorAll('.tool-view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(appId).classList.add('active');
+            
+            if(appId === 'tool-claude') {
+                document.getElementById('nav-claude').classList.add('active');
+            } else {
+                document.getElementById('nav-hex').classList.add('active');
+                renderHexGrid(true); // Force a render when switching to the tool
+            }
+        }
+
+
+        /* ---------------------------------------------------
+           CLAUDE BUILDER LOGIC
+        --------------------------------------------------- */
         let currentTab = 'costumes';
 
-        function switchTab(tab) {
+        function switchBuilderTab(tab) {
             currentTab = tab;
-            
-            // Update Tab Buttons
             document.getElementById('btn-costumes').classList.remove('active');
             document.getElementById('btn-tshirts').classList.remove('active');
             document.getElementById('btn-' + tab).classList.add('active');
 
-            // Update Forms
             document.getElementById('form-costumes').classList.remove('active');
             document.getElementById('form-tshirts').classList.remove('active');
             document.getElementById('form-' + tab).classList.add('active');
 
-            // Reset the result box output to clear confusion between tabs
             document.getElementById('resultOutput').innerHTML = '<div class="empty-state">Fill out the form to generate your prompt...</div>';
             document.getElementById('copyBtn').style.display = 'none';
         }
 
         function toggleSetField() {
             const isSet = document.getElementById('c_isSet').checked;
-            const setGroup = document.getElementById('setComponentsGroup');
-            if (isSet) {
-                setGroup.style.display = 'block';
-            } else {
-                setGroup.style.display = 'none';
-                document.getElementById('c_setComponents').value = ''; 
-            }
+            document.getElementById('setComponentsGroup').style.display = isSet ? 'block' : 'none';
+            if(!isSet) document.getElementById('c_setComponents').value = ''; 
         }
 
-        // Toggle Front/Back/Both Print Fields
         function togglePrintFields() {
             const printLoc = document.querySelector('input[name="t_printLocation"]:checked').value;
             const frontGroup = document.getElementById('t_frontPrintGroup');
             const backGroup = document.getElementById('t_backPrintGroup');
 
             if (printLoc === 'front') {
-                frontGroup.style.display = 'block';
-                backGroup.style.display = 'none';
-                document.getElementById('t_backPrint').value = ''; // clear hidden field
+                frontGroup.style.display = 'block'; backGroup.style.display = 'none';
+                document.getElementById('t_backPrint').value = ''; 
             } else if (printLoc === 'back') {
-                frontGroup.style.display = 'none';
-                backGroup.style.display = 'block';
-                document.getElementById('t_frontPrint').value = ''; // clear hidden field
-            } else if (printLoc === 'both') {
-                frontGroup.style.display = 'block';
-                backGroup.style.display = 'block';
+                frontGroup.style.display = 'none'; backGroup.style.display = 'block';
+                document.getElementById('t_frontPrint').value = ''; 
+            } else {
+                frontGroup.style.display = 'block'; backGroup.style.display = 'block';
             }
         }
 
-        // Helper function for A/An logic
         function getArticle(word) {
             if (!word || word === "[INSERT COLOUR]") return 'a'; 
             let firstLetter = word.charAt(0).toLowerCase();
@@ -578,15 +692,8 @@
                 const isSet = document.getElementById('c_isSet').checked;
                 const componentsRaw = document.getElementById('c_setComponents').value.trim();
 
-                let article = getArticle(itemName);
-                promptText = `This is ${article} ${itemName}`;
+                promptText = `This is ${getArticle(itemName)} ${itemName}${eventRaw ? ` for ${eventRaw}.` : '.'}`;
                 
-                if (eventRaw) {
-                    promptText += ` for ${eventRaw}.`;
-                } else {
-                    promptText += `.`; 
-                }
-
                 if (isSet && componentsRaw) {
                     promptText += `\n\nThis product is a set that includes the following components: ${componentsRaw}.`;
                 }
@@ -599,43 +706,26 @@
                     promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
                 }
 
-                if (focusRaw) {
-                    promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
-                }
-
-                if (sizeGuideRaw) {
-                    promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
-                }
-
-                if (extraDetailsRaw) {
-                    promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
-                }
+                if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
+                if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
+                if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
 
             } else if (currentTab === 'tshirts') {
-                const colourRaw = document.getElementById('t_colour').value.trim();
-                const colour = colourRaw || "[INSERT COLOUR]";
+                const colour = document.getElementById('t_colour').value.trim() || "[INSERT COLOUR]";
                 const styleText = document.querySelector('input[name="t_style"]:checked').value;
                 const printLoc = document.querySelector('input[name="t_printLocation"]:checked').value;
-                
                 const frontPrint = document.getElementById('t_frontPrint').value.trim() || "[INSERT FRONT PRINT DESCRIPTION]";
                 const backPrint = document.getElementById('t_backPrint').value.trim() || "[INSERT BACK PRINT DESCRIPTION]";
-
                 const bannedTermsRaw = document.getElementById('t_bannedTerms').value.trim();
                 const focusRaw = document.getElementById('t_focus').value.trim();
                 const sizeGuideRaw = document.getElementById('t_sizeGuide').value.trim();
                 const extraDetailsRaw = document.getElementById('t_extraDetails').value.trim();
-
-                let article = getArticle(colour);
                 
-                promptText = `This product is ${article} ${colour} ${styleText}`;
+                promptText = `This product is ${getArticle(colour)} ${colour} ${styleText}`;
 
-                if (printLoc === 'front') {
-                    promptText += ` with a ${frontPrint} print on the front.`;
-                } else if (printLoc === 'back') {
-                    promptText += ` with a ${backPrint} print on the back.`;
-                } else if (printLoc === 'both') {
-                    promptText += ` with a ${frontPrint} print on the front and a ${backPrint} print on the back.`;
-                }
+                if (printLoc === 'front') promptText += ` with a ${frontPrint} print on the front.`;
+                else if (printLoc === 'back') promptText += ` with a ${backPrint} print on the back.`;
+                else if (printLoc === 'both') promptText += ` with a ${frontPrint} print on the front and a ${backPrint} print on the back.`;
 
                 if (bannedTermsRaw) {
                     let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
@@ -645,45 +735,190 @@
                     promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
                 }
 
-                if (focusRaw) {
-                    promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
-                }
-
-                if (sizeGuideRaw) {
-                    promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
-                }
-
-                if (extraDetailsRaw) {
-                    promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
-                }
+                if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
+                if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
+                if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
             }
 
-            // Output the result
             document.getElementById('resultOutput').textContent = promptText;
             document.getElementById('copyBtn').style.display = 'block';
-            
             if(window.innerWidth < 900) {
                 document.getElementById('resultOutput').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
 
-        function copyToClipboard() {
-            const textToCopy = document.getElementById('resultOutput').textContent;
-            const btn = document.getElementById('copyBtn');
-            
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const originalText = btn.textContent;
-                btn.textContent = '✓ Copied!';
-                btn.classList.add('success');
-                
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.classList.remove('success');
-                }, 2000);
-            }).catch(err => {
-                alert('Failed to copy text. Please try selecting it manually.');
+        function copyPrompt() {
+            const text = document.getElementById('resultOutput').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Prompt copied to clipboard!");
             });
         }
+
+
+        /* ---------------------------------------------------
+           HEX CODES LOGIC & DATA
+        --------------------------------------------------- */
+        
+        const hexDatabase = {
+            "Blues & Teals": [
+                "#C6DEEC", "#07A3CC", "#242FA1", "#4F9BA1", 
+                "#8BC9EE", "#0753A9", "#93CEEC", "#06A3AA"
+            ],
+            "Reds & Pinks": [
+                "#E7648D", "#D70C2A", "#641624", "#C70E5C", 
+                "#EFAABD", "#B63530"
+            ],
+            "Oranges & Yellows": [
+                "#F5DE62", "#F19E39", "#EDC700"
+            ],
+            "Greens": [
+                "#036439", "#1A3427", "#9CBE29", "#C0E480", 
+                "#65BEA0", "#767B65", "#979C5A", "#30CF10"
+            ],
+            "Purples": [
+                "#AC51B0", "#969ACA", "#602E85"
+            ],
+            "Browns & Earth Tones": [
+                "#986A3B", "#AA9F7D", "#BE7450", "#D7BC85"
+            ],
+            "Neutrals & Greys": [
+                "#000000", "#FFFFFF", "#8A9295", "#CBC1BF"
+            ]
+        };
+
+        // Load custom hexes from Local Storage if they exist
+        let customHexes = JSON.parse(localStorage.getItem('userCustomHexes')) || [];
+
+        function renderHexGrid(force = false) {
+            const container = document.getElementById('hex-container');
+            if (!force && container.innerHTML !== '') return;
+            
+            container.innerHTML = ''; // Clear it out for fresh render
+            let html = '';
+            
+            // 1. Render Default Categories
+            for (const [categoryName, colors] of Object.entries(hexDatabase)) {
+                html += generateCategoryHTML(categoryName, colors);
+            }
+
+            // 2. Render Custom Colours Category (if any exist)
+            if (customHexes.length > 0) {
+                html += generateCategoryHTML("Your Custom Colours", customHexes);
+            }
+
+            container.innerHTML = html;
+        }
+
+        function generateCategoryHTML(title, colorsArray) {
+            let chunk = `<div class="hex-category">
+                            <h3>${title}</h3>
+                            <div class="hex-grid">`;
+            
+            colorsArray.forEach(hex => {
+                chunk += `
+                    <div class="hex-card" onclick="copyHex('${hex}')">
+                        <div class="hex-swatch" style="background-color: ${hex};"></div>
+                        <div class="hex-label">${hex.toUpperCase()}</div>
+                    </div>
+                `;
+            });
+            
+            chunk += `   </div>
+                      </div>`;
+            return chunk;
+        }
+
+        /* --- ADD CUSTOM HEX LOGIC & VALIDATION --- */
+        
+        // Helper: Convert Hex string to RGB object for mathematical comparison
+        function hexToRgb(hex) {
+            hex = hex.replace(/^#/, '');
+            if (hex.length === 3) {
+                hex = hex.split('').map(char => char + char).join('');
+            }
+            const num = parseInt(hex, 16);
+            return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+        }
+
+        // Helper: Calculate Euclidean distance between two colors in RGB space
+        function getColorDistance(hex1, hex2) {
+            const c1 = hexToRgb(hex1);
+            const c2 = hexToRgb(hex2);
+            // Simple distance formula for visual similarity
+            return Math.sqrt(
+                Math.pow(c1.r - c2.r, 2) +
+                Math.pow(c1.g - c2.g, 2) +
+                Math.pow(c1.b - c2.b, 2)
+            );
+        }
+
+        function addCustomHex() {
+            let input = document.getElementById('newHexInput').value.trim().toUpperCase();
+            
+            if (!input.startsWith('#')) input = '#' + input;
+            
+            // Regex to check if it's a valid 3 or 6 digit hex code
+            if (!/^#([0-9A-F]{3}){1,2}$/i.test(input)) {
+                showToast("Invalid format. Use a valid Hex (e.g. #FF0000)", true);
+                return;
+            }
+
+            // Standardize 3-character hexes to 6 characters
+            if (input.length === 4) {
+                input = '#' + input[1]+input[1] + input[2]+input[2] + input[3]+input[3];
+            }
+
+            // Gather all current colors (Defaults + User Customs) to check against
+            let allExistingColors = [];
+            Object.values(hexDatabase).forEach(arr => {
+                allExistingColors = allExistingColors.concat(arr);
+            });
+            allExistingColors = allExistingColors.concat(customHexes);
+
+            // Similarity Threshold (lower means stricter match. 25 is a good balance for "very close")
+            const THRESHOLD = 25; 
+            
+            for (let existing of allExistingColors) {
+                let distance = getColorDistance(input, existing);
+                if (distance < THRESHOLD) {
+                    showToast(`Blocked: Too visually similar to existing colour (${existing})`, true);
+                    return;
+                }
+            }
+
+            // If it passes the check, save it!
+            customHexes.push(input);
+            localStorage.setItem('userCustomHexes', JSON.stringify(customHexes));
+            document.getElementById('newHexInput').value = ''; // clear input
+            showToast("Custom colour added successfully!");
+            renderHexGrid(true); // Force re-render to show the new category
+        }
+
+        function copyHex(hexCode) {
+            navigator.clipboard.writeText(hexCode.toUpperCase()).then(() => {
+                showToast(`${hexCode.toUpperCase()} copied!`);
+            });
+        }
+
+        /* ---------------------------------------------------
+           GLOBAL UI HELPERS
+        --------------------------------------------------- */
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            
+            if (isError) {
+                toast.classList.add('error');
+            } else {
+                toast.classList.remove('error');
+            }
+
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
     </script>
 </body>
 </html>
