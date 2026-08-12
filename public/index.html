@@ -190,9 +190,10 @@
             min-height: 100px;
         }
 
-        /* Radio Buttons for T-Shirts */
+        /* Radio Buttons */
         .radio-group {
             display: flex;
+            flex-wrap: wrap; /* Allows wrapping on small screens */
             gap: 1.5rem;
             background: rgba(0, 0, 0, 0.2);
             padding: 1rem 1.25rem;
@@ -281,7 +282,8 @@
             transform: translateX(22px);
         }
 
-        #setComponentsGroup {
+        /* Dynamic Field Animations */
+        .dynamic-field {
             display: none;
             animation: slideDown 0.3s ease-out forwards;
         }
@@ -398,7 +400,7 @@
                     </label>
                 </div>
 
-                <div class="form-group" id="setComponentsGroup">
+                <div class="form-group dynamic-field" id="setComponentsGroup">
                     <label for="c_setComponents">Set Components</label>
                     <textarea id="c_setComponents" placeholder="e.g. 1x Top, 1x Skirt"></textarea>
                 </div>
@@ -426,12 +428,13 @@
 
             <!-- T-SHIRTS FORM -->
             <form id="form-tshirts" class="form-section">
+                
                 <div class="form-group">
-                    <label for="t_itemName">Item Name</label>
-                    <input type="text" id="t_itemName" placeholder="e.g. Graphic Skull Top" required>
+                    <label for="t_colour">T-Shirt Colour</label>
+                    <input type="text" id="t_colour" placeholder="e.g. Black, Neon Pink" required>
                 </div>
 
-                <!-- Changed to Radio Buttons so they are mutually exclusive -->
+                <label>Style</label>
                 <div class="radio-group">
                     <label class="custom-radio">
                         <input type="radio" name="t_style" id="t_isClassic" value="Classic T-Shirt" checked>
@@ -443,14 +446,30 @@
                     </label>
                 </div>
 
-                <div class="form-group">
-                    <label for="t_colour">T-Shirt Colour</label>
-                    <input type="text" id="t_colour" placeholder="e.g. Black, Neon Pink" required>
+                <label>Print Location</label>
+                <div class="radio-group">
+                    <label class="custom-radio">
+                        <input type="radio" name="t_printLocation" value="front" onchange="togglePrintFields()" checked>
+                        Front Print
+                    </label>
+                    <label class="custom-radio">
+                        <input type="radio" name="t_printLocation" value="back" onchange="togglePrintFields()">
+                        Back Print
+                    </label>
+                    <label class="custom-radio">
+                        <input type="radio" name="t_printLocation" value="both" onchange="togglePrintFields()">
+                        Both
+                    </label>
                 </div>
 
-                <div class="form-group">
-                    <label for="t_printDescription">Print Description</label>
-                    <textarea id="t_printDescription" placeholder="Describe the graphic or text on the shirt..." required></textarea>
+                <div class="form-group dynamic-field" id="t_frontPrintGroup" style="display: block;">
+                    <label for="t_frontPrint">Front Print Description</label>
+                    <textarea id="t_frontPrint" placeholder="Describe the graphic or text on the front..."></textarea>
+                </div>
+
+                <div class="form-group dynamic-field" id="t_backPrintGroup">
+                    <label for="t_backPrint">Back Print Description</label>
+                    <textarea id="t_backPrint" placeholder="Describe the graphic or text on the back..."></textarea>
                 </div>
 
                 <div class="form-group">
@@ -519,9 +538,29 @@
             }
         }
 
+        // Toggle Front/Back/Both Print Fields
+        function togglePrintFields() {
+            const printLoc = document.querySelector('input[name="t_printLocation"]:checked').value;
+            const frontGroup = document.getElementById('t_frontPrintGroup');
+            const backGroup = document.getElementById('t_backPrintGroup');
+
+            if (printLoc === 'front') {
+                frontGroup.style.display = 'block';
+                backGroup.style.display = 'none';
+                document.getElementById('t_backPrint').value = ''; // clear hidden field
+            } else if (printLoc === 'back') {
+                frontGroup.style.display = 'none';
+                backGroup.style.display = 'block';
+                document.getElementById('t_frontPrint').value = ''; // clear hidden field
+            } else if (printLoc === 'both') {
+                frontGroup.style.display = 'block';
+                backGroup.style.display = 'block';
+            }
+        }
+
         // Helper function for A/An logic
         function getArticle(word) {
-            if (!word) return 'a';
+            if (!word || word === "[INSERT COLOUR]") return 'a'; // default fallback
             let firstLetter = word.charAt(0).toLowerCase();
             return ['a', 'e', 'i', 'o', 'u'].includes(firstLetter) ? 'an' : 'a';
         }
@@ -569,21 +608,32 @@
                 }
 
             } else if (currentTab === 'tshirts') {
-                const itemName = document.getElementById('t_itemName').value.trim() || "[INSERT PRODUCT NAME]";
-                // Capture the value of whichever radio button is checked
+                const colourRaw = document.getElementById('t_colour').value.trim();
+                const colour = colourRaw || "[INSERT COLOUR]";
                 const styleText = document.querySelector('input[name="t_style"]:checked').value;
-                const colour = document.getElementById('t_colour').value.trim() || "[INSERT COLOUR]";
-                const printDesc = document.getElementById('t_printDescription').value.trim() || "[INSERT PRINT DESCRIPTION]";
+                const printLoc = document.querySelector('input[name="t_printLocation"]:checked').value;
+                
+                const frontPrint = document.getElementById('t_frontPrint').value.trim() || "[INSERT FRONT PRINT DESCRIPTION]";
+                const backPrint = document.getElementById('t_backPrint').value.trim() || "[INSERT BACK PRINT DESCRIPTION]";
+
                 const bannedTermsRaw = document.getElementById('t_bannedTerms').value.trim();
                 const focusRaw = document.getElementById('t_focus').value.trim();
                 const sizeGuideRaw = document.getElementById('t_sizeGuide').value.trim();
                 const extraDetailsRaw = document.getElementById('t_extraDetails').value.trim();
 
-                let article = getArticle(itemName);
-                promptText = `This is ${article} ${itemName}.`;
+                let article = getArticle(colour);
+                
+                // Build base sentence
+                promptText = `This product is ${article} ${colour} ${styleText}`;
 
-                promptText += `\n\nThe garment is a ${colour} ${styleText}.`;
-                promptText += `\n\nThe print features: ${printDesc}.`;
+                // Append print logic dynamically
+                if (printLoc === 'front') {
+                    promptText += ` with a ${frontPrint} print on the front.`;
+                } else if (printLoc === 'back') {
+                    promptText += ` with a ${backPrint} print on the back.`;
+                } else if (printLoc === 'both') {
+                    promptText += ` with a ${frontPrint} print on the front and a ${backPrint} print on the back.`;
+                }
 
                 if (bannedTermsRaw) {
                     promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. These terms can be used in the Generic Keywords for all channels.`;
