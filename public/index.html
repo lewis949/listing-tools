@@ -193,7 +193,7 @@
         /* Radio Buttons */
         .radio-group {
             display: flex;
-            flex-wrap: wrap; /* Allows wrapping on small screens */
+            flex-wrap: wrap;
             gap: 1.5rem;
             background: rgba(0, 0, 0, 0.2);
             padding: 1rem 1.25rem;
@@ -560,7 +560,7 @@
 
         // Helper function for A/An logic
         function getArticle(word) {
-            if (!word || word === "[INSERT COLOUR]") return 'a'; // default fallback
+            if (!word || word === "[INSERT COLOUR]") return 'a'; 
             let firstLetter = word.charAt(0).toLowerCase();
             return ['a', 'e', 'i', 'o', 'u'].includes(firstLetter) ? 'an' : 'a';
         }
@@ -592,7 +592,11 @@
                 }
 
                 if (bannedTermsRaw) {
-                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. These terms can be used in the Generic Keywords for all channels.`;
+                    let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
+                    if (bannedTermsRaw.toLowerCase().includes("gildan")) {
+                        keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
+                    }
+                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
                 }
 
                 if (focusRaw) {
@@ -623,10 +627,8 @@
 
                 let article = getArticle(colour);
                 
-                // Build base sentence
                 promptText = `This product is ${article} ${colour} ${styleText}`;
 
-                // Append print logic dynamically
                 if (printLoc === 'front') {
                     promptText += ` with a ${frontPrint} print on the front.`;
                 } else if (printLoc === 'back') {
@@ -636,7 +638,11 @@
                 }
 
                 if (bannedTermsRaw) {
-                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. These terms can be used in the Generic Keywords for all channels.`;
+                    let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
+                    if (bannedTermsRaw.toLowerCase().includes("gildan")) {
+                        keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
+                    }
+                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
                 }
 
                 if (focusRaw) {
