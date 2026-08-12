@@ -23,7 +23,6 @@
         }
 
         body {
-            /* Animated Aurora Background */
             background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #172554);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
@@ -61,6 +60,39 @@
             font-size: 1.1rem;
         }
 
+        /* Tabs UI */
+        .tabs-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            background: var(--glass-highlight);
+            color: var(--text-main);
+            border-color: #8b5cf6;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+
         .layout-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -75,7 +107,6 @@
             }
         }
 
-        /* Glassmorphism Panel */
         .panel {
             background: var(--glass-bg);
             backdrop-filter: blur(16px);
@@ -102,6 +133,20 @@
             height: 12px;
             border-radius: 50%;
             background: var(--accent-gradient);
+        }
+
+        .form-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .form-group {
@@ -145,7 +190,36 @@
             min-height: 100px;
         }
 
-        /* Toggle Switch */
+        /* Checkboxes for T-Shirts */
+        .checkbox-group {
+            display: flex;
+            gap: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 1.5rem;
+        }
+
+        .custom-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: var(--text-main);
+            text-transform: none;
+            letter-spacing: normal;
+            margin-bottom: 0;
+        }
+
+        .custom-checkbox input {
+            accent-color: #8b5cf6;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Toggle Switch for Sets */
         .toggle-container {
             display: flex;
             align-items: center;
@@ -296,48 +370,111 @@
 
     <div class="layout-grid">
         <div class="panel">
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <button class="tab-btn active" onclick="switchTab('costumes')" id="btn-costumes">Costumes</button>
+                <button class="tab-btn" onclick="switchTab('tshirts')" id="btn-tshirts">T-Shirts</button>
+            </div>
+            
             <h2 class="panel-title">Product Details</h2>
-            <form id="builderForm">
+            
+            <!-- COSTUMES FORM -->
+            <form id="form-costumes" class="form-section active">
                 <div class="form-group">
-                    <label for="itemName">Item Name</label>
-                    <input type="text" id="itemName" placeholder="e.g. Orange Dress" required>
+                    <label for="c_itemName">Item Name</label>
+                    <input type="text" id="c_itemName" placeholder="e.g. Orange Dress" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="event">Event (Optional)</label>
-                    <input type="text" id="event" placeholder="e.g. the Summer Music Festival">
+                    <label for="c_event">Event (Optional)</label>
+                    <input type="text" id="c_event" placeholder="e.g. the Summer Music Festival">
                 </div>
 
                 <div class="toggle-container">
-                    <label for="isSet">Is this product a set?</label>
+                    <label for="c_isSet">Is this product a set?</label>
                     <label class="switch">
-                        <input type="checkbox" id="isSet" onchange="toggleSetField()">
+                        <input type="checkbox" id="c_isSet" onchange="toggleSetField()">
                         <span class="slider"></span>
                     </label>
                 </div>
 
                 <div class="form-group" id="setComponentsGroup">
-                    <label for="setComponents">Set Components</label>
-                    <textarea id="setComponents" placeholder="e.g. 1x Top, 1x Skirt"></textarea>
+                    <label for="c_setComponents">Set Components</label>
+                    <textarea id="c_setComponents" placeholder="e.g. 1x Top, 1x Skirt"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="bannedTerms">Banned Terms (Optional)</label>
-                    <input type="text" id="bannedTerms" placeholder="e.g. Vintage, Designer-inspired">
+                    <label for="c_bannedTerms">Banned Terms (Optional)</label>
+                    <input type="text" id="c_bannedTerms" placeholder="e.g. Vintage, Designer-inspired">
                 </div>
 
                 <div class="form-group">
-                    <label for="focus">Focus Theme (Optional)</label>
-                    <input type="text" id="focus" placeholder="e.g. concert, Halloween">
+                    <label for="c_focus">Focus Theme (Optional)</label>
+                    <input type="text" id="c_focus" placeholder="e.g. concert, Halloween">
                 </div>
 
                 <div class="form-group">
-                    <label for="sizeGuide">Size Guide (Optional)</label>
-                    <textarea id="sizeGuide" placeholder="Paste accurate measurements here..."></textarea>
+                    <label for="c_sizeGuide">Size Guide (Optional)</label>
+                    <textarea id="c_sizeGuide" placeholder="Paste accurate measurements here..."></textarea>
                 </div>
 
-                <button type="button" class="primary-btn" onclick="generatePrompt()">Generate Prompt</button>
+                <div class="form-group">
+                    <label for="c_extraDetails">Extra Details (Optional)</label>
+                    <textarea id="c_extraDetails" placeholder="Any other specific details Claude needs to know..."></textarea>
+                </div>
             </form>
+
+            <!-- T-SHIRTS FORM -->
+            <form id="form-tshirts" class="form-section">
+                <div class="form-group">
+                    <label for="t_itemName">Item Name</label>
+                    <input type="text" id="t_itemName" placeholder="e.g. Graphic Skull Top" required>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="t_isClassic">
+                        Classic T-Shirt
+                    </label>
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="t_isBabyTee">
+                        Baby Tee
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label for="t_colour">T-Shirt Colour</label>
+                    <input type="text" id="t_colour" placeholder="e.g. Black, Neon Pink" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="t_printDescription">Print Description</label>
+                    <textarea id="t_printDescription" placeholder="Describe the graphic or text on the shirt..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="t_bannedTerms">Banned Terms (Optional)</label>
+                    <input type="text" id="t_bannedTerms" placeholder="e.g. Vintage, Designer-inspired">
+                </div>
+
+                <div class="form-group">
+                    <label for="t_focus">Focus Theme (Optional)</label>
+                    <input type="text" id="t_focus" placeholder="e.g. concert, Halloween">
+                </div>
+
+                <div class="form-group">
+                    <label for="t_sizeGuide">Size Guide (Optional)</label>
+                    <textarea id="t_sizeGuide" placeholder="Paste accurate measurements here..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="t_extraDetails">Extra Details (Optional)</label>
+                    <textarea id="t_extraDetails" placeholder="Any other specific details Claude needs to know..."></textarea>
+                </div>
+            </form>
+
+            <!-- Generate Button (Shared) -->
+            <button type="button" class="primary-btn" onclick="generatePrompt()">Generate Prompt</button>
         </div>
 
         <div class="panel">
@@ -350,60 +487,125 @@
     </div>
 
     <script>
+        let currentTab = 'costumes';
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update Tab Buttons
+            document.getElementById('btn-costumes').classList.remove('active');
+            document.getElementById('btn-tshirts').classList.remove('active');
+            document.getElementById('btn-' + tab).classList.add('active');
+
+            // Update Forms
+            document.getElementById('form-costumes').classList.remove('active');
+            document.getElementById('form-tshirts').classList.remove('active');
+            document.getElementById('form-' + tab).classList.add('active');
+
+            // Reset the result box output to clear confusion between tabs
+            document.getElementById('resultOutput').innerHTML = '<div class="empty-state">Fill out the form to generate your prompt...</div>';
+            document.getElementById('copyBtn').style.display = 'none';
+        }
+
         function toggleSetField() {
-            const isSet = document.getElementById('isSet').checked;
+            const isSet = document.getElementById('c_isSet').checked;
             const setGroup = document.getElementById('setComponentsGroup');
             if (isSet) {
                 setGroup.style.display = 'block';
             } else {
                 setGroup.style.display = 'none';
-                document.getElementById('setComponents').value = ''; 
+                document.getElementById('c_setComponents').value = ''; 
             }
         }
 
+        // Helper function for A/An logic
+        function getArticle(word) {
+            if (!word) return 'a';
+            let firstLetter = word.charAt(0).toLowerCase();
+            return ['a', 'e', 'i', 'o', 'u'].includes(firstLetter) ? 'an' : 'a';
+        }
+
         function generatePrompt() {
-            // Get raw values and trim whitespace
-            const itemNameRaw = document.getElementById('itemName').value.trim();
-            const eventRaw = document.getElementById('event').value.trim();
-            const bannedTermsRaw = document.getElementById('bannedTerms').value.trim();
-            const focusRaw = document.getElementById('focus').value.trim();
-            const sizeGuideRaw = document.getElementById('sizeGuide').value.trim();
-            const isSet = document.getElementById('isSet').checked;
-            const componentsRaw = document.getElementById('setComponents').value.trim();
+            let promptText = "";
 
-            // Handle "a" vs "an" logic based on first letter
-            let itemName = itemNameRaw || "[INSERT PRODUCT NAME]";
-            let firstLetter = itemName.charAt(0).toLowerCase();
-            let article = ['a', 'e', 'i', 'o', 'u'].includes(firstLetter) ? 'an' : 'a';
+            if (currentTab === 'costumes') {
+                const itemName = document.getElementById('c_itemName').value.trim() || "[INSERT PRODUCT NAME]";
+                const eventRaw = document.getElementById('c_event').value.trim();
+                const bannedTermsRaw = document.getElementById('c_bannedTerms').value.trim();
+                const focusRaw = document.getElementById('c_focus').value.trim();
+                const sizeGuideRaw = document.getElementById('c_sizeGuide').value.trim();
+                const extraDetailsRaw = document.getElementById('c_extraDetails').value.trim();
+                const isSet = document.getElementById('c_isSet').checked;
+                const componentsRaw = document.getElementById('c_setComponents').value.trim();
 
-            // Start building the prompt dynamically
-            let promptText = `This is ${article} ${itemName}`;
-            
-            // Add event if it exists
-            if (eventRaw) {
-                promptText += ` for ${eventRaw}.`;
-            } else {
-                promptText += `.`; // Just end the sentence if no event
-            }
+                let article = getArticle(itemName);
+                promptText = `This is ${article} ${itemName}`;
+                
+                if (eventRaw) {
+                    promptText += ` for ${eventRaw}.`;
+                } else {
+                    promptText += `.`; 
+                }
 
-            // Add set components if it is a set
-            if (isSet && componentsRaw) {
-                promptText += `\n\nThis product is a set that includes the following components: ${componentsRaw}.`;
-            }
+                if (isSet && componentsRaw) {
+                    promptText += `\n\nThis product is a set that includes the following components: ${componentsRaw}.`;
+                }
 
-            // Add banned terms conditionally
-            if (bannedTermsRaw) {
-                promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. These terms can be used in the Generic Keywords for all channels.`;
-            }
+                if (bannedTermsRaw) {
+                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. These terms can be used in the Generic Keywords for all channels.`;
+                }
 
-            // Add focus theme conditionally
-            if (focusRaw) {
-                promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
-            }
+                if (focusRaw) {
+                    promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
+                }
 
-            // Add size guide conditionally
-            if (sizeGuideRaw) {
-                promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
+                if (sizeGuideRaw) {
+                    promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
+                }
+
+                if (extraDetailsRaw) {
+                    promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
+                }
+
+            } else if (currentTab === 'tshirts') {
+                const itemName = document.getElementById('t_itemName').value.trim() || "[INSERT PRODUCT NAME]";
+                const isClassic = document.getElementById('t_isClassic').checked;
+                const isBabyTee = document.getElementById('t_isBabyTee').checked;
+                const colour = document.getElementById('t_colour').value.trim() || "[INSERT COLOUR]";
+                const printDesc = document.getElementById('t_printDescription').value.trim() || "[INSERT PRINT DESCRIPTION]";
+                const bannedTermsRaw = document.getElementById('t_bannedTerms').value.trim();
+                const focusRaw = document.getElementById('t_focus').value.trim();
+                const sizeGuideRaw = document.getElementById('t_sizeGuide').value.trim();
+                const extraDetailsRaw = document.getElementById('t_extraDetails').value.trim();
+
+                let article = getArticle(itemName);
+                promptText = `This is ${article} ${itemName}.`;
+
+                // Logic for the checkboxes
+                let tShirtStyles = [];
+                if (isClassic) tShirtStyles.push("Classic T-Shirt");
+                if (isBabyTee) tShirtStyles.push("Baby Tee");
+                
+                let styleText = tShirtStyles.length > 0 ? tShirtStyles.join(" and ") : "T-Shirt";
+
+                promptText += `\n\nThe garment is a ${colour} ${styleText}.`;
+                promptText += `\n\nThe print features: ${printDesc}.`;
+
+                if (bannedTermsRaw) {
+                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. These terms can be used in the Generic Keywords for all channels.`;
+                }
+
+                if (focusRaw) {
+                    promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
+                }
+
+                if (sizeGuideRaw) {
+                    promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
+                }
+
+                if (extraDetailsRaw) {
+                    promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
+                }
             }
 
             // Output the result
