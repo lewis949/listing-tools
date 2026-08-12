@@ -181,6 +181,22 @@
 
         button.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6); }
 
+        button.secondary-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--glass-border);
+            padding: 1.25rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        button.secondary-btn:hover { background: var(--glass-highlight); }
+
         /* Panels Shared */
         .panel {
             background: var(--glass-bg);
@@ -349,24 +365,34 @@
             justify-content: center;
             align-items: center;
             margin-bottom: 2rem;
-            flex-wrap: wrap;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .add-hex-panel input {
-            width: 250px;
-            padding: 0.8rem 1rem;
+        .search-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3) !important;
+            border-radius: 50px !important;
+            padding: 1rem 1.5rem !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .add-hex-panel button {
-            width: auto;
-            margin-top: 0;
-            padding: 0.8rem 1.5rem;
-            font-size: 1rem;
+        .add-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50% !important;
+            font-size: 1.8rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 !important;
+            margin-top: 0 !important;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            flex-shrink: 0;
         }
 
-        .hex-category {
-            margin-bottom: 3rem;
-        }
+        .hex-category { margin-bottom: 3rem; }
         
         .hex-category h3 {
             font-size: 1.5rem;
@@ -418,6 +444,52 @@
             color: var(--text-main);
         }
 
+        /* --- MODAL WINDOW STYLES --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-content h2 { margin-bottom: 1.5rem; }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
         /* Toast Notification */
         .toast {
             position: fixed;
@@ -432,18 +504,12 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             opacity: 0;
             transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: 1000;
+            z-index: 3000;
             pointer-events: none;
         }
 
-        .toast.error {
-            background: rgba(239, 68, 68, 0.9); /* Red for errors */
-        }
-
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
+        .toast.error { background: rgba(239, 68, 68, 0.9); }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
     </style>
 </head>
@@ -454,7 +520,7 @@
         <div class="nav-container">
             <div class="nav-logo">Listing Tools</div>
             <div class="nav-links">
-                <button class="nav-btn active" onclick="switchApp('tool-claude')" id="nav-claude">Claude Builder</button>
+                <button class="nav-btn active" onclick="switchApp('tool-claude')" id="nav-claude">Collaboration Builder</button>
                 <button class="nav-btn" onclick="switchApp('tool-hex')" id="nav-hex">Hex Codes</button>
             </div>
         </div>
@@ -462,6 +528,20 @@
 
     <!-- TOAST NOTIFICATION -->
     <div id="toast" class="toast">Copied to clipboard!</div>
+
+    <!-- MODAL OVERLAY -->
+    <div id="addHexModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Add Custom Colour</h2>
+            <div class="form-group">
+                <input type="text" id="modalHexInput" placeholder="Enter Hex (e.g. #FF5500)" maxlength="7">
+            </div>
+            <div class="modal-actions">
+                <button class="secondary-btn" onclick="closeModal()">Cancel</button>
+                <button class="primary-btn" onclick="addCustomHex()">Save Colour</button>
+            </div>
+        </div>
+    </div>
 
     <div class="main-content">
         
@@ -594,13 +674,13 @@
         <div id="tool-hex" class="tool-view">
             <div class="header">
                 <h1>Colour Hex Codes</h1>
-                <p>Click any swatch below to instantly copy its Hex Code.</p>
+                <p>Search by shade or add your own custom hex codes.</p>
             </div>
             
-            <!-- ADD NEW HEX UI -->
+            <!-- SEARCH AND ADD UI -->
             <div class="add-hex-panel">
-                <input type="text" id="newHexInput" placeholder="Enter Hex (e.g. #FF5500)" maxlength="7">
-                <button class="primary-btn" onclick="addCustomHex()">+ Add Colour</button>
+                <input type="text" id="searchHexInput" class="search-input" placeholder="Search colours (e.g. blue, red, green)..." onkeyup="filterHexGrid()">
+                <button class="primary-btn add-btn" onclick="openModal()" title="Add Custom Colour">+</button>
             </div>
 
             <div class="panel" style="max-width: 1000px; margin: 0 auto;">
@@ -627,10 +707,9 @@
                 document.getElementById('nav-claude').classList.add('active');
             } else {
                 document.getElementById('nav-hex').classList.add('active');
-                renderHexGrid(true); // Force a render when switching to the tool
+                renderHexGrid(true);
             }
         }
-
 
         /* ---------------------------------------------------
            CLAUDE BUILDER LOGIC
@@ -786,27 +865,26 @@
             ]
         };
 
-        // Load custom hexes from Local Storage if they exist
+        // Load custom hexes from Local Storage
         let customHexes = JSON.parse(localStorage.getItem('userCustomHexes')) || [];
 
         function renderHexGrid(force = false) {
             const container = document.getElementById('hex-container');
             if (!force && container.innerHTML !== '') return;
             
-            container.innerHTML = ''; // Clear it out for fresh render
+            container.innerHTML = '';
             let html = '';
             
-            // 1. Render Default Categories
             for (const [categoryName, colors] of Object.entries(hexDatabase)) {
                 html += generateCategoryHTML(categoryName, colors);
             }
 
-            // 2. Render Custom Colours Category (if any exist)
             if (customHexes.length > 0) {
                 html += generateCategoryHTML("Your Custom Colours", customHexes);
             }
 
             container.innerHTML = html;
+            filterHexGrid(); // Re-apply search filter if user just added a color while searching
         }
 
         function generateCategoryHTML(title, colorsArray) {
@@ -828,9 +906,39 @@
             return chunk;
         }
 
-        /* --- ADD CUSTOM HEX LOGIC & VALIDATION --- */
+        /* --- HEX SEARCH LOGIC --- */
+        function filterHexGrid() {
+            const query = document.getElementById('searchHexInput').value.toLowerCase();
+            const categories = document.querySelectorAll('.hex-category');
+            
+            categories.forEach(category => {
+                const title = category.querySelector('h3').textContent.toLowerCase();
+                const hexLabels = Array.from(category.querySelectorAll('.hex-label')).map(lbl => lbl.textContent.toLowerCase());
+                
+                // Show category if the title matches the search OR any specific hex code inside it matches
+                let match = title.includes(query) || hexLabels.some(hex => hex.includes(query));
+                category.style.display = match ? 'block' : 'none';
+            });
+        }
+
+
+        /* --- MODAL LOGIC & CUSTOM HEX ADDITION --- */
         
-        // Helper: Convert Hex string to RGB object for mathematical comparison
+        function openModal() {
+            document.getElementById('addHexModal').classList.add('active');
+            document.getElementById('modalHexInput').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('addHexModal').classList.remove('active');
+            document.getElementById('modalHexInput').value = '';
+        }
+
+        // Close modal if user clicks outside of the content box
+        document.getElementById('addHexModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
         function hexToRgb(hex) {
             hex = hex.replace(/^#/, '');
             if (hex.length === 3) {
@@ -840,11 +948,9 @@
             return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
         }
 
-        // Helper: Calculate Euclidean distance between two colors in RGB space
         function getColorDistance(hex1, hex2) {
             const c1 = hexToRgb(hex1);
             const c2 = hexToRgb(hex2);
-            // Simple distance formula for visual similarity
             return Math.sqrt(
                 Math.pow(c1.r - c2.r, 2) +
                 Math.pow(c1.g - c2.g, 2) +
@@ -853,29 +959,25 @@
         }
 
         function addCustomHex() {
-            let input = document.getElementById('newHexInput').value.trim().toUpperCase();
+            let input = document.getElementById('modalHexInput').value.trim().toUpperCase();
             
             if (!input.startsWith('#')) input = '#' + input;
             
-            // Regex to check if it's a valid 3 or 6 digit hex code
             if (!/^#([0-9A-F]{3}){1,2}$/i.test(input)) {
                 showToast("Invalid format. Use a valid Hex (e.g. #FF0000)", true);
                 return;
             }
 
-            // Standardize 3-character hexes to 6 characters
             if (input.length === 4) {
                 input = '#' + input[1]+input[1] + input[2]+input[2] + input[3]+input[3];
             }
 
-            // Gather all current colors (Defaults + User Customs) to check against
             let allExistingColors = [];
             Object.values(hexDatabase).forEach(arr => {
                 allExistingColors = allExistingColors.concat(arr);
             });
             allExistingColors = allExistingColors.concat(customHexes);
 
-            // Similarity Threshold (lower means stricter match. 25 is a good balance for "very close")
             const THRESHOLD = 25; 
             
             for (let existing of allExistingColors) {
@@ -886,12 +988,12 @@
                 }
             }
 
-            // If it passes the check, save it!
+            // Save and Close
             customHexes.push(input);
             localStorage.setItem('userCustomHexes', JSON.stringify(customHexes));
-            document.getElementById('newHexInput').value = ''; // clear input
             showToast("Custom colour added successfully!");
-            renderHexGrid(true); // Force re-render to show the new category
+            closeModal();
+            renderHexGrid(true); 
         }
 
         function copyHex(hexCode) {
