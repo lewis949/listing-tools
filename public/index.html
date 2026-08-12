@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listing Tools | Claude Builder</title>
+    <style>
+        :root {
+            --bg-base: #0f172a;      /* Slate 900 */
+            --bg-surface: #1e293b;   /* Slate 800 */
+            --bg-input: #0b1120;     /* Darker slate */
+            --text-main: #f1f5f9;    /* Slate 100 */
+            --text-muted: #94a3b8;   /* Slate 400 */
+            --border-color: #334155; /* Slate 700 */
+            --accent: #3b82f6;       /* Blue 500 */
+            --accent-hover: #2563eb; /* Blue 600 */
+            --success: #10b981;      /* Emerald 500 */
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Layout Grid */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        @media (min-width: 900px) {
+            .layout-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 0.875rem;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]::placeholder, textarea::placeholder {
+            color: #475569;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .help-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+        }
+
+        /* Custom Toggle Switch for 'Is Set?' */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--bg-input);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .toggle-container label {
+            margin-bottom: 0;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--border-color);
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Hidden Set Components field */
+        #setComponentsGroup {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        button.primary-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        button.primary-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Result Section */
+        .result-box {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            height: calc(100% - 130px);
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Empty state placeholder */
+        .empty-state {
+            display: flex;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .copy-btn {
+            background-color: var(--border-color);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            display: none; /* Hidden until generated */
+        }
+        
+        .copy-btn:hover {
+            background-color: #475569;
+        }
+
+        .copy-btn.success {
+            background-color: var(--success);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Listing Tools</h1>
+        <p>Claude Collaboration Builder</p>
+    </div>
+
+    <div class="layout-grid">
+        <!-- LEFT COLUMN: Form -->
+        <div class="panel">
+            <h2 class="panel-title">Product Details</h2>
+            <form id="builderForm">
+                <div class="form-group">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" placeholder="e.g. Sequin Mini Dress" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="event">Event</label>
+                    <input type="text" id="event" placeholder="e.g. the Summer Music Festival" required>
+                </div>
+
+                <!-- Set Toggle -->
+                <div class="toggle-container">
+                    <label for="isSet">Is this product a set?</label>
+                    <label class="switch">
+                        <input type="checkbox" id="isSet" onchange="toggleSetField()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- Set Components (Hidden by default) -->
+                <div class="form-group" id="setComponentsGroup">
+                    <label for="setComponents">Set Components</label>
+                    <textarea id="setComponents" placeholder="e.g. 1x Sequin Top, 1x Mini Skirt, 1x Matching Headband"></textarea>
+                    <div class="help-text">List the items included in the set.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="bannedTerms">Banned Terms</label>
+                    <input type="text" id="bannedTerms" placeholder="e.g. Vintage, Designer-inspired" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="focus">Focus Theme</label>
+                    <input type="text" id="focus" placeholder="e.g. concert, Halloween" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="sizeGuide">Size Guide</label>
+                    <textarea id="sizeGuide" placeholder="Paste accurate measurements here..." required></textarea>
+                </div>
+
+                <button type="button" class="primary-btn" onclick="generatePrompt()">Generate Prompt</button>
+            </form>
+        </div>
+
+        <!-- RIGHT COLUMN: Output -->
+        <div class="panel">
+            <h2 class="panel-title">Generated Prompt</h2>
+            <div id="resultOutput" class="result-box">
+                <div class="empty-state">Fill out the form to generate your prompt...</div>
+            </div>
+            <button id="copyBtn" class="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
+        </div>
+    </div>
+
+    <script>
+        // Toggle the visibility of the Set Components field
+        function toggleSetField() {
+            const isSet = document.getElementById('isSet').checked;
+            const setGroup = document.getElementById('setComponentsGroup');
+            
+            if (isSet) {
+                setGroup.style.display = 'block';
+            } else {
+                setGroup.style.display = 'none';
+                // Clear the value if they untick it
+                document.getElementById('setComponents').value = ''; 
+            }
+        }
+
+        function generatePrompt() {
+            // Grab base values
+            const itemName = document.getElementById('itemName').value || "[INSERT PRODUCT NAME]";
+            const event = document.getElementById('event').value || "[INSERT EVENT HERE]";
+            const bannedTerms = document.getElementById('bannedTerms').value || "[INSERT NO USE TERMS]";
+            const focus = document.getElementById('focus').value || "[THEME]";
+            const sizeGuide = document.getElementById('sizeGuide').value || "[INSERT SIZE GUIDE]";
+            
+            // Handle the Set logic
+            const isSet = document.getElementById('isSet').checked;
+            let setComponentsText = "";
+            
+            if (isSet) {
+                const components = document.getElementById('setComponents').value || "[INSERT SET COMPONENTS]";
+                setComponentsText = `\n\nThis product is a set that includes the following components: ${components}.`;
+            }
+
+            // Build the final template
+            const promptTemplate = `This is a ${itemName} for ${event}.${setComponentsText}
+
+Do not use ${bannedTerms} in the title, subtitle, short description, description or bullet points for any channel. These terms can be used in the Generic Keywords for all channels.
+
+Please make the listing ${focus}-focused.
+
+The size guide is as follows:
+${sizeGuide}`;
+
+            // Inject into result box and show copy button
+            document.getElementById('resultOutput').textContent = promptTemplate;
+            document.getElementById('copyBtn').style.display = 'block';
+            
+            // On mobile, scroll down to the result
+            if(window.innerWidth < 900) {
+                document.getElementById('resultOutput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function copyToClipboard() {
+            const textToCopy = document.getElementById('resultOutput').textContent;
+            const btn = document.getElementById('copyBtn');
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('success');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('success');
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy text. Please try selecting it manually.');
+            });
+        }
+    </script>
+</body>
+</html>
