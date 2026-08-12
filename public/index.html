@@ -664,8 +664,8 @@
                     <!-- T-SHIRTS FORM -->
                     <form id="form-tshirts" class="form-section">
                         <div class="form-group">
-                            <label>T-Shirt Colour</label>
-                            <input type="text" id="t_colour" placeholder="e.g. Black, Neon Pink" required>
+                            <label>T-Shirt Age/Colour</label>
+                            <input type="text" id="t_colour" placeholder="Kids Black, Adults Neon Pink" required>
                         </div>
                         <label>Style</label>
                         <div class="radio-group">
@@ -755,7 +755,6 @@
     <script>
         let isAdmin = false;
 
-        // Check authentication status on startup
         window.addEventListener('DOMContentLoaded', () => {
             checkAdminStatus();
         });
@@ -784,12 +783,11 @@
                 adminBtn.style.borderColor = 'rgba(244, 63, 94, 0.4)';
                 adminBtn.style.color = '#f43f5e';
             }
-            renderHexGrid(true); // Re-render grid to show/hide delete buttons
+            renderHexGrid(true);
         }
 
         function toggleAdminState() {
             if (isAdmin) {
-                // Logout
                 fetch('/api/admin/logout', { method: 'POST' })
                     .then(res => res.json())
                     .then(data => {
@@ -1010,7 +1008,6 @@
             let html = '';
             
             for (const [categoryName, colors] of Object.entries(hexDatabase)) {
-                // Filter out default colors that the admin has deleted
                 const activeColors = colors.filter(hex => !deletedHexes.includes(hex));
                 if (activeColors.length > 0) {
                     html += generateCategoryHTML(categoryName, activeColors);
@@ -1047,16 +1044,14 @@
         }
 
         function deleteHex(event, hexCode) {
-            event.stopPropagation(); // Stop card click event from triggering
+            event.stopPropagation();
             if (!isAdmin) return;
 
             if (confirm(`Are you sure you want to delete ${hexCode}?`)) {
-                // Remove from custom list if present
                 if (customHexes.includes(hexCode)) {
                     customHexes = customHexes.filter(h => h !== hexCode);
                     localStorage.setItem('userCustomHexes', JSON.stringify(customHexes));
                 } else {
-                    // Otherwise mark as deleted in standard list
                     deletedHexes.push(hexCode);
                     localStorage.setItem('userDeletedHexes', JSON.stringify(deletedHexes));
                 }
