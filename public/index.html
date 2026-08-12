@@ -73,6 +73,7 @@
         .nav-links {
             display: flex;
             gap: 1rem;
+            align-items: center;
         }
 
         .nav-btn {
@@ -96,6 +97,16 @@
             background: rgba(139, 92, 246, 0.2);
             color: white;
             border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+
+        .admin-nav-btn {
+            border: 1px solid rgba(244, 63, 94, 0.4);
+            color: #f43f5e;
+        }
+
+        .admin-nav-btn:hover {
+            background: rgba(244, 63, 94, 0.2);
+            color: white;
         }
 
         /* Main Content Container */
@@ -145,7 +156,7 @@
             letter-spacing: 0.5px;
         }
 
-        input[type="text"], textarea {
+        input[type="text"], input[type="password"], textarea {
             width: 100%;
             padding: 1rem;
             background: rgba(0, 0, 0, 0.2);
@@ -156,7 +167,7 @@
             transition: all 0.3s ease;
         }
 
-        input[type="text"]:focus, textarea:focus {
+        input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
             outline: none;
             background: rgba(0, 0, 0, 0.4);
             border-color: #8b5cf6;
@@ -446,6 +457,32 @@
             color: var(--text-main);
         }
 
+        /* Delete Badge for Admins */
+        .delete-hex-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .delete-hex-btn:hover {
+            background: #ef4444;
+            transform: scale(1.1);
+        }
+
         /* --- MODAL WINDOW STYLES --- */
         .modal-overlay {
             position: fixed;
@@ -524,6 +561,7 @@
             <div class="nav-links">
                 <button class="nav-btn active" onclick="switchApp('tool-claude')" id="nav-claude">Collaboration Builder</button>
                 <button class="nav-btn" onclick="switchApp('tool-hex')" id="nav-hex">Hex Codes</button>
+                <button class="nav-btn admin-nav-btn" onclick="toggleAdminState()" id="nav-admin">Admin Login</button>
             </div>
         </div>
     </nav>
@@ -531,7 +569,7 @@
     <!-- TOAST NOTIFICATION -->
     <div id="toast" class="toast">Copied to clipboard!</div>
 
-    <!-- MODAL OVERLAY -->
+    <!-- MODAL: ADD HEX -->
     <div id="addHexModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Add Custom Colour</h2>
@@ -539,8 +577,27 @@
                 <input type="text" id="modalHexInput" placeholder="Enter Hex (e.g. #FF5500)" maxlength="7">
             </div>
             <div class="modal-actions">
-                <button class="secondary-btn" onclick="closeModal()">Cancel</button>
+                <button class="secondary-btn" onclick="closeModal('addHexModal')">Cancel</button>
                 <button class="primary-btn" onclick="addCustomHex()">Save Colour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADMIN LOGIN -->
+    <div id="adminLoginModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Admin Login</h2>
+            <div class="form-group">
+                <label style="text-align: left;">Username</label>
+                <input type="text" id="adminUser" placeholder="Enter admin username">
+            </div>
+            <div class="form-group">
+                <label style="text-align: left;">Password</label>
+                <input type="password" id="adminPass" placeholder="Enter admin password">
+            </div>
+            <div class="modal-actions">
+                <button class="secondary-btn" onclick="closeModal('adminLoginModal')">Cancel</button>
+                <button class="primary-btn" onclick="submitAdminLogin()">Login</button>
             </div>
         </div>
     </div>
@@ -682,7 +739,7 @@
             <!-- SEARCH AND ADD UI -->
             <div class="add-hex-panel">
                 <input type="text" id="searchHexInput" class="search-input" placeholder="Search colours (e.g. blue, red, green)..." onkeyup="filterHexGrid()">
-                <button class="primary-btn add-btn" onclick="openModal()" title="Add Custom Colour">+</button>
+                <button class="primary-btn add-btn" onclick="openModal('addHexModal')" title="Add Custom Colour">+</button>
             </div>
 
             <div class="panel" style="max-width: 1000px; margin: 0 auto;">
@@ -696,6 +753,82 @@
 
     <!-- MAIN SCRIPT -->
     <script>
+        let isAdmin = false;
+
+        // Check authentication status on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAdminStatus();
+        });
+
+        function checkAdminStatus() {
+            fetch('/api/admin/status')
+                .then(res => res.json())
+                .then(data => {
+                    isAdmin = data.isAdmin;
+                    updateAdminUI();
+                })
+                .catch(() => {
+                    isAdmin = false;
+                    updateAdminUI();
+                });
+        }
+
+        function updateAdminUI() {
+            const adminBtn = document.getElementById('nav-admin');
+            if (isAdmin) {
+                adminBtn.textContent = 'Admin Logout';
+                adminBtn.style.borderColor = '#10b981';
+                adminBtn.style.color = '#10b981';
+            } else {
+                adminBtn.textContent = 'Admin Login';
+                adminBtn.style.borderColor = 'rgba(244, 63, 94, 0.4)';
+                adminBtn.style.color = '#f43f5e';
+            }
+            renderHexGrid(true); // Re-render grid to show/hide delete buttons
+        }
+
+        function toggleAdminState() {
+            if (isAdmin) {
+                // Logout
+                fetch('/api/admin/logout', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            isAdmin = false;
+                            showToast("Logged out of admin mode");
+                            updateAdminUI();
+                        }
+                    });
+            } else {
+                openModal('adminLoginModal');
+            }
+        }
+
+        function submitAdminLogin() {
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+
+            fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    isAdmin = true;
+                    showToast("Admin access granted!");
+                    closeModal('adminLoginModal');
+                    document.getElementById('adminUser').value = '';
+                    document.getElementById('adminPass').value = '';
+                    updateAdminUI();
+                } else {
+                    showToast(data.message || "Login failed", true);
+                }
+            })
+            .catch(() => showToast("Error connecting to server", true));
+        }
+
         /* ---------------------------------------------------
            APP NAVIGATION LOGIC
         --------------------------------------------------- */
@@ -835,7 +968,6 @@
             });
         }
 
-
         /* ---------------------------------------------------
            HEX CODES LOGIC & DATA
         --------------------------------------------------- */
@@ -868,6 +1000,7 @@
         };
 
         let customHexes = JSON.parse(localStorage.getItem('userCustomHexes')) || [];
+        let deletedHexes = JSON.parse(localStorage.getItem('userDeletedHexes')) || [];
 
         function renderHexGrid(force = false) {
             const container = document.getElementById('hex-container');
@@ -877,7 +1010,11 @@
             let html = '';
             
             for (const [categoryName, colors] of Object.entries(hexDatabase)) {
-                html += generateCategoryHTML(categoryName, colors);
+                // Filter out default colors that the admin has deleted
+                const activeColors = colors.filter(hex => !deletedHexes.includes(hex));
+                if (activeColors.length > 0) {
+                    html += generateCategoryHTML(categoryName, activeColors);
+                }
             }
 
             if (customHexes.length > 0) {
@@ -894,8 +1031,10 @@
                             <div class="hex-grid">`;
             
             colorsArray.forEach(hex => {
+                let deleteBtn = isAdmin ? `<button class="delete-hex-btn" onclick="deleteHex(event, '${hex}')" title="Delete Colour">✕</button>` : '';
                 chunk += `
                     <div class="hex-card" onclick="copyHex('${hex}')">
+                        ${deleteBtn}
                         <div class="hex-swatch" style="background-color: ${hex};"></div>
                         <div class="hex-label">${hex.toUpperCase()}</div>
                     </div>
@@ -905,6 +1044,26 @@
             chunk += `   </div>
                       </div>`;
             return chunk;
+        }
+
+        function deleteHex(event, hexCode) {
+            event.stopPropagation(); // Stop card click event from triggering
+            if (!isAdmin) return;
+
+            if (confirm(`Are you sure you want to delete ${hexCode}?`)) {
+                // Remove from custom list if present
+                if (customHexes.includes(hexCode)) {
+                    customHexes = customHexes.filter(h => h !== hexCode);
+                    localStorage.setItem('userCustomHexes', JSON.stringify(customHexes));
+                } else {
+                    // Otherwise mark as deleted in standard list
+                    deletedHexes.push(hexCode);
+                    localStorage.setItem('userDeletedHexes', JSON.stringify(deletedHexes));
+                }
+
+                showToast(`Deleted ${hexCode}`);
+                renderHexGrid(true);
+            }
         }
 
         /* --- HEX SEARCH LOGIC --- */
@@ -921,21 +1080,21 @@
             });
         }
 
-
         /* --- MODAL LOGIC & CUSTOM HEX ADDITION --- */
-        
-        function openModal() {
-            document.getElementById('addHexModal').classList.add('active');
-            document.getElementById('modalHexInput').focus();
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            if(id === 'addHexModal') document.getElementById('modalHexInput').focus();
+            if(id === 'adminLoginModal') document.getElementById('adminUser').focus();
         }
 
-        function closeModal() {
-            document.getElementById('addHexModal').classList.remove('active');
-            document.getElementById('modalHexInput').value = '';
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
         }
 
-        document.getElementById('addHexModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) closeModal(this.id);
+            });
         });
 
         function hexToRgb(hex) {
@@ -990,7 +1149,7 @@
             customHexes.push(input);
             localStorage.setItem('userCustomHexes', JSON.stringify(customHexes));
             showToast("Custom colour added successfully!");
-            closeModal();
+            closeModal('addHexModal');
             renderHexGrid(true); 
         }
 
