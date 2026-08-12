@@ -190,8 +190,8 @@
             min-height: 100px;
         }
 
-        /* Checkboxes for T-Shirts */
-        .checkbox-group {
+        /* Radio Buttons for T-Shirts */
+        .radio-group {
             display: flex;
             gap: 1.5rem;
             background: rgba(0, 0, 0, 0.2);
@@ -201,7 +201,7 @@
             margin-bottom: 1.5rem;
         }
 
-        .custom-checkbox {
+        .custom-radio {
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -212,7 +212,7 @@
             margin-bottom: 0;
         }
 
-        .custom-checkbox input {
+        .custom-radio input {
             accent-color: #8b5cf6;
             width: 18px;
             height: 18px;
@@ -431,13 +431,14 @@
                     <input type="text" id="t_itemName" placeholder="e.g. Graphic Skull Top" required>
                 </div>
 
-                <div class="checkbox-group">
-                    <label class="custom-checkbox">
-                        <input type="checkbox" id="t_isClassic">
+                <!-- Changed to Radio Buttons so they are mutually exclusive -->
+                <div class="radio-group">
+                    <label class="custom-radio">
+                        <input type="radio" name="t_style" id="t_isClassic" value="Classic T-Shirt" checked>
                         Classic T-Shirt
                     </label>
-                    <label class="custom-checkbox">
-                        <input type="checkbox" id="t_isBabyTee">
+                    <label class="custom-radio">
+                        <input type="radio" name="t_style" id="t_isBabyTee" value="Baby Tee">
                         Baby Tee
                     </label>
                 </div>
@@ -569,8 +570,8 @@
 
             } else if (currentTab === 'tshirts') {
                 const itemName = document.getElementById('t_itemName').value.trim() || "[INSERT PRODUCT NAME]";
-                const isClassic = document.getElementById('t_isClassic').checked;
-                const isBabyTee = document.getElementById('t_isBabyTee').checked;
+                // Capture the value of whichever radio button is checked
+                const styleText = document.querySelector('input[name="t_style"]:checked').value;
                 const colour = document.getElementById('t_colour').value.trim() || "[INSERT COLOUR]";
                 const printDesc = document.getElementById('t_printDescription').value.trim() || "[INSERT PRINT DESCRIPTION]";
                 const bannedTermsRaw = document.getElementById('t_bannedTerms').value.trim();
@@ -580,13 +581,6 @@
 
                 let article = getArticle(itemName);
                 promptText = `This is ${article} ${itemName}.`;
-
-                // Logic for the checkboxes
-                let tShirtStyles = [];
-                if (isClassic) tShirtStyles.push("Classic T-Shirt");
-                if (isBabyTee) tShirtStyles.push("Baby Tee");
-                
-                let styleText = tShirtStyles.length > 0 ? tShirtStyles.join(" and ") : "T-Shirt";
 
                 promptText += `\n\nThe garment is a ${colour} ${styleText}.`;
                 promptText += `\n\nThe print features: ${printDesc}.`;
