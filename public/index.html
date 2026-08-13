@@ -517,7 +517,6 @@
             transform: scale(1.1);
         }
 
-        /* Match category delete button to edit button */
         .admin-actions .delete-hex-btn {
             position: static;
             width: 28px;
@@ -569,7 +568,8 @@
             padding: 0.75rem 1rem;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: center; /* keep centered vertically */
+            gap: 1rem; /* Spacing between name and ID */
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -585,6 +585,8 @@
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
+            white-space: nowrap; /* Keep channel name safely on one line */
+            flex-shrink: 0; /* Prevent the name from being crushed */
         }
 
         .channel-id {
@@ -592,6 +594,9 @@
             font-weight: 700;
             color: #60a5fa;
             font-size: 0.95rem;
+            text-align: right;
+            word-break: break-all; /* CRITICAL: Forces long strings to wrap instead of overflowing */
+            overflow-wrap: anywhere;
         }
 
         .admin-add-cat-btn {
@@ -716,7 +721,8 @@
     </div>
 
     <!-- MODAL: ADD/EDIT CATEGORY ID -->
-    <div id="addCategoryModal" class="modal-overlay">
+    <!-- Added data-original-type to track if we are renaming a product type -->
+    <div id="addCategoryModal" class="modal-overlay" data-original-type="">
         <div class="modal-content">
             <h2 id="categoryModalTitle">Add Product Category</h2>
             <div class="form-group" style="text-align: left;">
@@ -1324,10 +1330,9 @@
             container.innerHTML = '';
             let html = '';
 
-            // Combine defaults (not deleted, not overridden) and customs
             let allCats = defaultCategories
                 .filter(cat => !deletedCategories.includes(cat.type))
-                .filter(cat => !customCategories.some(c => c.type === cat.type)) // Hide default if custom override exists
+                .filter(cat => !customCategories.some(c => c.type === cat.type)) 
                 .concat(customCategories);
 
             if(allCats.length === 0) {
@@ -1366,7 +1371,6 @@
             filterCategoryGrid();
         }
 
-        // Hides empty channels completely so they don't take up space in the grid
         function generateChannelItemHTML(channelName, code) {
             if (!code || code.trim() === '') return ''; 
 
@@ -1391,9 +1395,9 @@
         }
 
         function openAddCategoryModal() {
+            document.getElementById('addCategoryModal').removeAttribute('data-original-type');
             document.getElementById('categoryModalTitle').textContent = "Add Product Category";
             document.getElementById('cat_productType').value = '';
-            document.getElementById('cat_productType').disabled = false; // Allow typing
             document.getElementById('cat_amazon').value = '';
             document.getElementById('cat_ebay').value = '';
             document.getElementById('cat_shein').value = '';
@@ -1408,13 +1412,14 @@
             event.stopPropagation();
             if (!isAdmin) return;
 
-            // Find category data
             let cat = customCategories.find(c => c.type === type) || defaultCategories.find(c => c.type === type);
             if (!cat) return;
 
+            document.getElementById('addCategoryModal').setAttribute('data-original-type', cat.type);
             document.getElementById('categoryModalTitle').textContent = "Edit Product Category";
+            
+            // Allow name editing
             document.getElementById('cat_productType').value = cat.type;
-            document.getElementById('cat_productType').disabled = true; // Lock name so it updates instead of duplicating
             
             document.getElementById('cat_amazon').value = cat.channels.amazon || '';
             document.getElementById('cat_ebay').value = cat.channels.ebay || '';
@@ -1447,14 +1452,27 @@
                 }
             };
 
+            const originalType = document.getElementById('addCategoryModal').getAttribute('data-original-type');
+
+            // If the name was edited
+            if (originalType && originalType !== type) {
+                // Remove the old name from custom categories if it existed there
+                customCategories = customCategories.filter(c => c.type !== originalType);
+                
+                // If it was overriding a default category, mark the default as deleted
+                if (defaultCategories.some(c => c.type === originalType)) {
+                    if (!deletedCategories.includes(originalType)) {
+                        deletedCategories.push(originalType);
+                        localStorage.setItem('userDeletedCategories', JSON.stringify(deletedCategories));
+                    }
+                }
+            }
+
             const existingIndex = customCategories.findIndex(c => c.type === type);
             if (existingIndex >= 0) {
-                // Update existing custom category
                 customCategories[existingIndex] = newCategory;
             } else {
-                // Add as new (this also overrides defaults with the same name)
                 customCategories.push(newCategory);
-                // Ensure it's not marked as deleted anymore
                 deletedCategories = deletedCategories.filter(c => c !== type);
                 localStorage.setItem('userDeletedCategories', JSON.stringify(deletedCategories));
             }
@@ -1483,7 +1501,6 @@
                 renderCategoryGrid(true);
             }
         }
-
 
         /* --- MODAL LOGIC & CUSTOM HEX ADDITION --- */
         function openModal(id) {
