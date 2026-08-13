@@ -1,61 +1,176 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Admin credentials (set these in Render environment variables or use defaults)
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ILFDpurdeys!';
+// Connect to Neon Postgres Database
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
-// Parse incoming JSON and form data
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Configure session management
 app.use(session({
     secret: process.env.SESSION_SECRET || 'listing-tools-secret-key-12345',
     resave: false,
     saveUninitialized: false,
-    cookie: { 
-        secure: false, // Set to true if running behind HTTPS in production
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
+    cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// Serve static assets from 'public'
-app.use(express.static(path.join(__dirname, 'public')));
+// Initialize Database Tables in Neon
+async function initDb() {
+    try {
+        // Table for Custom Hex Codes
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS hex_codes (
+                id SERIAL PRIMARY KEY,
+                hex_code VARCHAR(7) UNIQUE NOT NULL,
+                is_deleted BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
 
-// API: Check Admin Authentication Status
+        // Table for Categories
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS categories (
+                id SERIAL PRIMARY KEY,
+                product_type VARCHAR(255) UNIQUE NOT NULL,
+                amazon VARCHAR(100),
+                ebay VARCHAR(100),
+                shein VARCHAR(100),
+                debenhams VARCHAR(100),
+                therange VARCHAR(100),
+                tesco VARCHAR(100),
+                bnq VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        console.log('Neon database initialized successfully!');
+    } catch (err) {
+        console.error('Error initializing database:', err);
+    }
+}
+initDb();
+
+/* ---------------------------------------------------
+   HEX CODES API ENDPOINTS
+--------------------------------------------------- */
+app.get('/api/hexes', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT hex_code FROM hex_codes WHERE is_deleted = FALSE ORDER BY created_at ASC');
+        res.json({ success: true, hexes: result.rows.map(r => r.hex_code) });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to fetch hexes' });
+    }
+});
+
+app.post('/api/hexes', async (req, res) => {
+    const { hexCode } = req.body;
+    if (!hexCode) return res.status(400).json({ success: false, message: 'Hex code required' });
+
+    try {
+        await pool.query(
+            'INSERT INTO hex_codes (hex_code, is_deleted) VALUES ($1, FALSE) ON CONFLICT (hex_code) DO UPDATE SET is_deleted = FALSE',
+            [hexCode.toUpperCase()]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to save hex' });
+    }
+});
+
+app.delete('/api/hexes/:hex', async (req, res) => {
+    if (!req.session || !req.session.isAdmin) {
+        return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    const formattedHex = '#' + req.params.hex.toUpperCase();
+    try {
+        await pool.query('UPDATE hex_codes SET is_deleted = TRUE WHERE hex_code = $1', [formattedHex]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to delete hex' });
+    }
+});
+
+/* ---------------------------------------------------
+   CATEGORIES API ENDPOINTS
+--------------------------------------------------- */
+app.get('/api/categories', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM categories ORDER BY created_at ASC');
+        res.json({ success: true, categories: result.rows });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to fetch categories' });
+    }
+});
+
+app.post('/api/categories', async (req, res) => {
+    const { product_type, amazon, ebay, shein, debenhams, therange, tesco, bnq } = req.body;
+    
+    try {
+        await pool.query(`
+            INSERT INTO categories (product_type, amazon, ebay, shein, debenhams, therange, tesco, bnq)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ON CONFLICT (product_type) DO UPDATE SET
+            amazon = $2, ebay = $3, shein = $4, debenhams = $5, therange = $6, tesco = $7, bnq = $8
+        `, [product_type, amazon, ebay, shein, debenhams, therange, tesco, bnq]);
+        
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to save category' });
+    }
+});
+
+app.delete('/api/categories/:id', async (req, res) => {
+    if (!req.session || !req.session.isAdmin) {
+        return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    try {
+        await pool.query('DELETE FROM categories WHERE id = $1', [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to delete category' });
+    }
+});
+
+/* ---------------------------------------------------
+   ADMIN AUTH ENDPOINTS
+--------------------------------------------------- */
 app.get('/api/admin/status', (req, res) => {
     res.json({ isAdmin: !!(req.session && req.session.isAdmin) });
 });
 
-// API: Admin Login
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
+    const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
     
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
         req.session.isAdmin = true;
-        res.json({ success: true, message: 'Authenticated successfully' });
+        res.json({ success: true });
     } else {
         res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 });
 
-// API: Admin Logout
 app.post('/api/admin/logout', (req, res) => {
-    req.session.destroy(err => {
-        if (err) {
-            return res.status(500).json({ success: false, message: 'Could not log out' });
-        }
-        res.clearCookie('connect.sid');
-        res.json({ success: true });
-    });
+    req.session.destroy(() => res.json({ success: true }));
 });
 
 // Start Server
 app.listen(PORT, () => {
-    console.log(`Listing Tools web service running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
