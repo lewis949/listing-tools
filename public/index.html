@@ -173,6 +173,11 @@
             border-color: #8b5cf6;
             box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
         }
+        
+        input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
         textarea { resize: vertical; min-height: 100px; }
 
@@ -457,6 +462,36 @@
             color: var(--text-main);
         }
 
+        /* Edit and Delete Buttons for Admins */
+        .admin-actions {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .edit-btn {
+            background: rgba(59, 130, 246, 0.8);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .edit-btn:hover {
+            background: #3b82f6;
+            transform: scale(1.1);
+        }
+
         .delete-hex-btn {
             position: absolute;
             top: 4px;
@@ -482,6 +517,14 @@
             transform: scale(1.1);
         }
 
+        /* Match category delete button to edit button */
+        .admin-actions .delete-hex-btn {
+            position: static;
+            width: 28px;
+            height: 28px;
+            font-size: 0.9rem;
+        }
+
         /* --- CATEGORY ID STYLES --- */
         .category-card {
             background: var(--glass-bg);
@@ -504,6 +547,7 @@
             margin-bottom: 1rem;
             border-bottom: 1px solid var(--glass-border);
             padding-bottom: 0.75rem;
+            padding-right: 60px; /* Space for admin buttons */
         }
 
         .category-title {
@@ -548,12 +592,6 @@
             font-weight: 700;
             color: #60a5fa;
             font-size: 0.95rem;
-        }
-
-        .channel-id.empty {
-            color: rgba(255, 255, 255, 0.2);
-            font-style: italic;
-            font-weight: 400;
         }
 
         .admin-add-cat-btn {
@@ -677,10 +715,10 @@
         </div>
     </div>
 
-    <!-- MODAL: ADD CATEGORY ID -->
+    <!-- MODAL: ADD/EDIT CATEGORY ID -->
     <div id="addCategoryModal" class="modal-overlay">
         <div class="modal-content">
-            <h2>Add Product Category</h2>
+            <h2 id="categoryModalTitle">Add Product Category</h2>
             <div class="form-group" style="text-align: left;">
                 <label>Product Type Name</label>
                 <input type="text" id="cat_productType" placeholder="e.g. Costume, T-Shirt, Onesie" required>
@@ -898,7 +936,7 @@
             
             <div class="add-hex-panel">
                 <input type="text" id="searchCatInput" class="search-input" placeholder="Search product type (e.g. costume, t-shirt, dress)..." onkeyup="filterCategoryGrid()">
-                <button id="adminAddCatBtn" class="admin-add-cat-btn" style="display: none;" onclick="openModal('addCategoryModal')">+ Add Product Category</button>
+                <button id="adminAddCatBtn" class="admin-add-cat-btn" style="display: none;" onclick="openAddCategoryModal()">+ Add Product Category</button>
             </div>
 
             <div class="panel" style="max-width: 1000px; margin: 0 auto;">
@@ -1286,9 +1324,10 @@
             container.innerHTML = '';
             let html = '';
 
-            // Combine defaults (not deleted) and customs
+            // Combine defaults (not deleted, not overridden) and customs
             let allCats = defaultCategories
                 .filter(cat => !deletedCategories.includes(cat.type))
+                .filter(cat => !customCategories.some(c => c.type === cat.type)) // Hide default if custom override exists
                 .concat(customCategories);
 
             if(allCats.length === 0) {
@@ -1297,11 +1336,16 @@
             }
 
             allCats.forEach(cat => {
-                let deleteBtn = isAdmin ? `<button class="delete-hex-btn" onclick="deleteCategory(event, '${cat.type}')" title="Delete Category">✕</button>` : '';
+                let adminActions = isAdmin ? `
+                    <div class="admin-actions">
+                        <button class="edit-btn" onclick="editCategory(event, '${cat.type}')" title="Edit Category">✎</button>
+                        <button class="delete-hex-btn" onclick="deleteCategory(event, '${cat.type}')" title="Delete Category">✕</button>
+                    </div>
+                ` : '';
                 
                 html += `
                     <div class="category-card" data-title="${cat.type.toLowerCase()}">
-                        ${deleteBtn}
+                        ${adminActions}
                         <div class="category-card-header">
                             <div class="category-title">${cat.type}</div>
                         </div>
@@ -1322,16 +1366,14 @@
             filterCategoryGrid();
         }
 
+        // Hides empty channels completely so they don't take up space in the grid
         function generateChannelItemHTML(channelName, code) {
-            let hasCode = code && code.trim() !== '';
-            let codeDisplay = hasCode ? code : 'N/A';
-            let emptyClass = hasCode ? '' : 'empty';
-            let clickAction = hasCode ? `onclick="copyValue('${code}', '${channelName} Category ID copied!')"` : `onclick="showToast('No ID available for ${channelName}', true)"`;
+            if (!code || code.trim() === '') return ''; 
 
             return `
-                <div class="channel-item" ${clickAction}>
+                <div class="channel-item" onclick="copyValue('${code}', '${channelName} Category ID copied!')">
                     <span class="channel-name">${channelName}</span>
-                    <span class="channel-id ${emptyClass}">${codeDisplay}</span>
+                    <span class="channel-id">${code}</span>
                 </div>
             `;
         }
@@ -1346,6 +1388,43 @@
                 const title = card.getAttribute('data-title');
                 card.style.display = title.includes(query) ? 'block' : 'none';
             });
+        }
+
+        function openAddCategoryModal() {
+            document.getElementById('categoryModalTitle').textContent = "Add Product Category";
+            document.getElementById('cat_productType').value = '';
+            document.getElementById('cat_productType').disabled = false; // Allow typing
+            document.getElementById('cat_amazon').value = '';
+            document.getElementById('cat_ebay').value = '';
+            document.getElementById('cat_shein').value = '';
+            document.getElementById('cat_debenhams').value = '';
+            document.getElementById('cat_therange').value = '';
+            document.getElementById('cat_tesco').value = '';
+            document.getElementById('cat_bnq').value = '';
+            openModal('addCategoryModal');
+        }
+
+        function editCategory(event, type) {
+            event.stopPropagation();
+            if (!isAdmin) return;
+
+            // Find category data
+            let cat = customCategories.find(c => c.type === type) || defaultCategories.find(c => c.type === type);
+            if (!cat) return;
+
+            document.getElementById('categoryModalTitle').textContent = "Edit Product Category";
+            document.getElementById('cat_productType').value = cat.type;
+            document.getElementById('cat_productType').disabled = true; // Lock name so it updates instead of duplicating
+            
+            document.getElementById('cat_amazon').value = cat.channels.amazon || '';
+            document.getElementById('cat_ebay').value = cat.channels.ebay || '';
+            document.getElementById('cat_shein').value = cat.channels.shein || '';
+            document.getElementById('cat_debenhams').value = cat.channels.debenhams || '';
+            document.getElementById('cat_therange').value = cat.channels.therange || '';
+            document.getElementById('cat_tesco').value = cat.channels.tesco || '';
+            document.getElementById('cat_bnq').value = cat.channels.bnq || '';
+
+            openModal('addCategoryModal');
         }
 
         function saveCategoryItem() {
@@ -1368,19 +1447,20 @@
                 }
             };
 
-            customCategories.push(newCategory);
+            const existingIndex = customCategories.findIndex(c => c.type === type);
+            if (existingIndex >= 0) {
+                // Update existing custom category
+                customCategories[existingIndex] = newCategory;
+            } else {
+                // Add as new (this also overrides defaults with the same name)
+                customCategories.push(newCategory);
+                // Ensure it's not marked as deleted anymore
+                deletedCategories = deletedCategories.filter(c => c !== type);
+                localStorage.setItem('userDeletedCategories', JSON.stringify(deletedCategories));
+            }
+
             localStorage.setItem('userCustomCategories', JSON.stringify(customCategories));
             
-            // Clear inputs
-            document.getElementById('cat_productType').value = '';
-            document.getElementById('cat_amazon').value = '';
-            document.getElementById('cat_ebay').value = '';
-            document.getElementById('cat_shein').value = '';
-            document.getElementById('cat_debenhams').value = '';
-            document.getElementById('cat_therange').value = '';
-            document.getElementById('cat_tesco').value = '';
-            document.getElementById('cat_bnq').value = '';
-
             showToast(`Saved category "${type}"!`);
             closeModal('addCategoryModal');
             renderCategoryGrid(true);
@@ -1391,7 +1471,6 @@
             if (!isAdmin) return;
 
             if (confirm(`Are you sure you want to delete the category "${categoryType}"?`)) {
-                // Check if in customs
                 if (customCategories.some(c => c.type === categoryType)) {
                     customCategories = customCategories.filter(c => c.type !== categoryType);
                     localStorage.setItem('userCustomCategories', JSON.stringify(customCategories));
@@ -1410,7 +1489,6 @@
         function openModal(id) {
             document.getElementById(id).classList.add('active');
             if(id === 'addHexModal') document.getElementById('modalHexInput').focus();
-            if(id === 'addCategoryModal') document.getElementById('cat_productType').focus();
             if(id === 'adminLoginModal') document.getElementById('adminUser').focus();
         }
 
