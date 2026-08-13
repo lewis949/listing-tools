@@ -462,13 +462,34 @@
             color: var(--text-main);
         }
 
-        /* Edit and Delete Buttons for Admins */
+        /* Edit, Duplicate, and Delete Buttons for Admins */
         .admin-actions {
             position: absolute;
             top: 12px;
             right: 12px;
             display: flex;
             gap: 0.5rem;
+        }
+
+        .duplicate-btn {
+            background: rgba(16, 185, 129, 0.8);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .duplicate-btn:hover {
+            background: #10b981;
+            transform: scale(1.1);
         }
 
         .edit-btn {
@@ -546,7 +567,7 @@
             margin-bottom: 1rem;
             border-bottom: 1px solid var(--glass-border);
             padding-bottom: 0.75rem;
-            padding-right: 60px;
+            padding-right: 90px; /* Space for the 3 admin buttons */
         }
 
         .category-title {
@@ -720,7 +741,7 @@
         </div>
     </div>
 
-    <!-- MODAL: ADD/EDIT CATEGORY ID -->
+    <!-- MODAL: ADD/EDIT/DUPLICATE CATEGORY ID -->
     <div id="addCategoryModal" class="modal-overlay" data-original-type="">
         <div class="modal-content">
             <h2 id="categoryModalTitle">Add Product Category</h2>
@@ -1342,6 +1363,7 @@
             allCats.forEach(cat => {
                 let adminActions = isAdmin ? `
                     <div class="admin-actions">
+                        <button class="duplicate-btn" onclick="duplicateCategory(event, '${cat.type}')" title="Duplicate Category">⧉</button>
                         <button class="edit-btn" onclick="editCategory(event, '${cat.type}')" title="Edit Category">✎</button>
                         <button class="delete-hex-btn" onclick="deleteCategory(event, '${cat.type}')" title="Delete Category">✕</button>
                     </div>
@@ -1381,12 +1403,10 @@
             `;
         }
 
-        /* --- ADVANCED CATEGORY SEARCH LOGIC --- */
         function filterCategoryGrid() {
             const inputEl = document.getElementById('searchCatInput');
             if(!inputEl) return;
             
-            // Clean the search query: remove punctuation and spaces so "women's" becomes "womens"
             const cleanQuery = inputEl.value.toLowerCase().replace(/[^a-z0-9\s]/g, '');
             const queryWords = cleanQuery.split(/\s+/).filter(w => w);
 
@@ -1395,22 +1415,17 @@
             cards.forEach(card => {
                 const originalTitle = card.getAttribute('data-title');
                 
-                // Build an expanded text block containing the title and all potential synonyms
                 let searchableText = originalTitle.toLowerCase();
                 
-                // Gender / Age synonyms
                 if (searchableText.includes('ladies') || searchableText.includes('women')) searchableText += " ladies women womens woman female";
                 if (searchableText.includes('men') || searchableText.includes('male')) searchableText += " mens men man male";
                 if (searchableText.includes('kid') || searchableText.includes('child')) searchableText += " kids childrens child children";
                 
-                // Product type synonyms
                 if (searchableText.includes('t-shirt') || searchableText.includes('tshirt') || searchableText.includes('tee')) searchableText += " tshirt t-shirt t shirt tee tops";
                 if (searchableText.includes('costume') || searchableText.includes('fancy dress')) searchableText += " costume fancydress cosplay outfit";
                 
-                // Strip all punctuation from our searchable block to ensure smooth matching
                 searchableText = searchableText.replace(/[^a-z0-9\s]/g, '');
 
-                // For a card to match, EVERY word typed into the search bar must exist in the expanded searchable text
                 let match = true;
                 for (let word of queryWords) {
                     if (!searchableText.includes(word)) {
@@ -1427,6 +1442,7 @@
             document.getElementById('addCategoryModal').removeAttribute('data-original-type');
             document.getElementById('categoryModalTitle').textContent = "Add Product Category";
             document.getElementById('cat_productType').value = '';
+            document.getElementById('cat_productType').disabled = false;
             document.getElementById('cat_amazon').value = '';
             document.getElementById('cat_ebay').value = '';
             document.getElementById('cat_shein').value = '';
@@ -1448,6 +1464,32 @@
             document.getElementById('categoryModalTitle').textContent = "Edit Product Category";
             
             document.getElementById('cat_productType').value = cat.type;
+            document.getElementById('cat_productType').disabled = false;
+            
+            document.getElementById('cat_amazon').value = cat.channels.amazon || '';
+            document.getElementById('cat_ebay').value = cat.channels.ebay || '';
+            document.getElementById('cat_shein').value = cat.channels.shein || '';
+            document.getElementById('cat_debenhams').value = cat.channels.debenhams || '';
+            document.getElementById('cat_therange').value = cat.channels.therange || '';
+            document.getElementById('cat_tesco').value = cat.channels.tesco || '';
+            document.getElementById('cat_bnq').value = cat.channels.bnq || '';
+
+            openModal('addCategoryModal');
+        }
+
+        function duplicateCategory(event, type) {
+            event.stopPropagation();
+            if (!isAdmin) return;
+
+            let cat = customCategories.find(c => c.type === type) || defaultCategories.find(c => c.type === type);
+            if (!cat) return;
+
+            document.getElementById('addCategoryModal').removeAttribute('data-original-type');
+            document.getElementById('categoryModalTitle').textContent = "Duplicate Product Category";
+            
+            // Append (Copy) so it's a new unique name
+            document.getElementById('cat_productType').value = cat.type + " (Copy)";
+            document.getElementById('cat_productType').disabled = false;
             
             document.getElementById('cat_amazon').value = cat.channels.amazon || '';
             document.getElementById('cat_ebay').value = cat.channels.ebay || '';
