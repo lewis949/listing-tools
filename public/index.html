@@ -546,7 +546,7 @@
             margin-bottom: 1rem;
             border-bottom: 1px solid var(--glass-border);
             padding-bottom: 0.75rem;
-            padding-right: 60px; /* Space for admin buttons */
+            padding-right: 60px;
         }
 
         .category-title {
@@ -568,8 +568,8 @@
             padding: 0.75rem 1rem;
             display: flex;
             justify-content: space-between;
-            align-items: center; /* keep centered vertically */
-            gap: 1rem; /* Spacing between name and ID */
+            align-items: center;
+            gap: 1rem;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -585,8 +585,8 @@
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
-            white-space: nowrap; /* Keep channel name safely on one line */
-            flex-shrink: 0; /* Prevent the name from being crushed */
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .channel-id {
@@ -595,7 +595,7 @@
             color: #60a5fa;
             font-size: 0.95rem;
             text-align: right;
-            word-break: break-all; /* CRITICAL: Forces long strings to wrap instead of overflowing */
+            word-break: break-all;
             overflow-wrap: anywhere;
         }
 
@@ -721,7 +721,6 @@
     </div>
 
     <!-- MODAL: ADD/EDIT CATEGORY ID -->
-    <!-- Added data-original-type to track if we are renaming a product type -->
     <div id="addCategoryModal" class="modal-overlay" data-original-type="">
         <div class="modal-content">
             <h2 id="categoryModalTitle">Add Product Category</h2>
@@ -1349,7 +1348,7 @@
                 ` : '';
                 
                 html += `
-                    <div class="category-card" data-title="${cat.type.toLowerCase()}">
+                    <div class="category-card" data-title="${cat.type}">
                         ${adminActions}
                         <div class="category-card-header">
                             <div class="category-title">${cat.type}</div>
@@ -1382,15 +1381,45 @@
             `;
         }
 
+        /* --- ADVANCED CATEGORY SEARCH LOGIC --- */
         function filterCategoryGrid() {
             const inputEl = document.getElementById('searchCatInput');
             if(!inputEl) return;
-            const query = inputEl.value.toLowerCase();
+            
+            // Clean the search query: remove punctuation and spaces so "women's" becomes "womens"
+            const cleanQuery = inputEl.value.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+            const queryWords = cleanQuery.split(/\s+/).filter(w => w);
+
             const cards = document.querySelectorAll('#category-container .category-card');
 
             cards.forEach(card => {
-                const title = card.getAttribute('data-title');
-                card.style.display = title.includes(query) ? 'block' : 'none';
+                const originalTitle = card.getAttribute('data-title');
+                
+                // Build an expanded text block containing the title and all potential synonyms
+                let searchableText = originalTitle.toLowerCase();
+                
+                // Gender / Age synonyms
+                if (searchableText.includes('ladies') || searchableText.includes('women')) searchableText += " ladies women womens woman female";
+                if (searchableText.includes('men') || searchableText.includes('male')) searchableText += " mens men man male";
+                if (searchableText.includes('kid') || searchableText.includes('child')) searchableText += " kids childrens child children";
+                
+                // Product type synonyms
+                if (searchableText.includes('t-shirt') || searchableText.includes('tshirt') || searchableText.includes('tee')) searchableText += " tshirt t-shirt t shirt tee tops";
+                if (searchableText.includes('costume') || searchableText.includes('fancy dress')) searchableText += " costume fancydress cosplay outfit";
+                
+                // Strip all punctuation from our searchable block to ensure smooth matching
+                searchableText = searchableText.replace(/[^a-z0-9\s]/g, '');
+
+                // For a card to match, EVERY word typed into the search bar must exist in the expanded searchable text
+                let match = true;
+                for (let word of queryWords) {
+                    if (!searchableText.includes(word)) {
+                        match = false;
+                        break;
+                    }
+                }
+                
+                card.style.display = (match || queryWords.length === 0) ? 'block' : 'none';
             });
         }
 
@@ -1418,7 +1447,6 @@
             document.getElementById('addCategoryModal').setAttribute('data-original-type', cat.type);
             document.getElementById('categoryModalTitle').textContent = "Edit Product Category";
             
-            // Allow name editing
             document.getElementById('cat_productType').value = cat.type;
             
             document.getElementById('cat_amazon').value = cat.channels.amazon || '';
@@ -1454,12 +1482,9 @@
 
             const originalType = document.getElementById('addCategoryModal').getAttribute('data-original-type');
 
-            // If the name was edited
             if (originalType && originalType !== type) {
-                // Remove the old name from custom categories if it existed there
                 customCategories = customCategories.filter(c => c.type !== originalType);
                 
-                // If it was overriding a default category, mark the default as deleted
                 if (defaultCategories.some(c => c.type === originalType)) {
                     if (!deletedCategories.includes(originalType)) {
                         deletedCategories.push(originalType);
@@ -1501,6 +1526,7 @@
                 renderCategoryGrid(true);
             }
         }
+
 
         /* --- MODAL LOGIC & CUSTOM HEX ADDITION --- */
         function openModal(id) {
