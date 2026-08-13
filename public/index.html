@@ -369,7 +369,7 @@
         
         .copy-btn:hover { background: var(--glass-highlight); }
 
-        /* --- HEX CODES STYLES --- */
+        /* --- HEX CODES & SEARCH PANELS --- */
         .add-hex-panel {
             display: flex;
             gap: 1rem;
@@ -457,7 +457,6 @@
             color: var(--text-main);
         }
 
-        /* Delete Badge for Admins */
         .delete-hex-btn {
             position: absolute;
             top: 4px;
@@ -483,6 +482,98 @@
             transform: scale(1.1);
         }
 
+        /* --- CATEGORY ID STYLES --- */
+        .category-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .category-card:hover {
+            background: var(--glass-highlight);
+        }
+
+        .category-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.75rem;
+        }
+
+        .category-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .channel-item {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .channel-item:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .channel-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .channel-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: #60a5fa;
+            font-size: 0.95rem;
+        }
+
+        .channel-id.empty {
+            color: rgba(255, 255, 255, 0.2);
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .admin-add-cat-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .admin-add-cat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6);
+        }
+
         /* --- MODAL WINDOW STYLES --- */
         .modal-overlay {
             position: fixed;
@@ -503,14 +594,16 @@
         }
 
         .modal-content {
-            background: rgba(30, 41, 59, 0.9);
+            background: rgba(30, 41, 59, 0.95);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius);
             padding: 2.5rem;
             width: 90%;
-            max-width: 450px;
+            max-width: 550px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             text-align: center;
             transform: translateY(20px);
@@ -526,7 +619,7 @@
         .modal-actions {
             display: flex;
             gap: 1rem;
-            margin-top: 0.5rem;
+            margin-top: 1rem;
         }
 
         /* Toast Notification */
@@ -561,6 +654,7 @@
             <div class="nav-links">
                 <button class="nav-btn active" onclick="switchApp('tool-claude')" id="nav-claude">Collaboration Builder</button>
                 <button class="nav-btn" onclick="switchApp('tool-hex')" id="nav-hex">Hex Codes</button>
+                <button class="nav-btn" onclick="switchApp('tool-cat')" id="nav-cat">Category IDs</button>
                 <button class="nav-btn admin-nav-btn" onclick="toggleAdminState()" id="nav-admin">Admin Login</button>
             </div>
         </div>
@@ -579,6 +673,50 @@
             <div class="modal-actions">
                 <button class="secondary-btn" onclick="closeModal('addHexModal')">Cancel</button>
                 <button class="primary-btn" onclick="addCustomHex()">Save Colour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD CATEGORY ID -->
+    <div id="addCategoryModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Add Product Category</h2>
+            <div class="form-group" style="text-align: left;">
+                <label>Product Type Name</label>
+                <input type="text" id="cat_productType" placeholder="e.g. Costume, T-Shirt, Onesie" required>
+            </div>
+            <div style="text-align: left; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; font-weight: 600;">Channel Category IDs</div>
+            <div class="form-group" style="text-align: left;">
+                <label>Amazon</label>
+                <input type="text" id="cat_amazon" placeholder="e.g. 2409725031">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label>eBay</label>
+                <input type="text" id="cat_ebay" placeholder="e.g. 11450">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label>Shein</label>
+                <input type="text" id="cat_shein" placeholder="e.g. 1732">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label>Debenhams</label>
+                <input type="text" id="cat_debenhams" placeholder="e.g. DEB-408">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label>The Range</label>
+                <input type="text" id="cat_therange" placeholder="e.g. TR-8820">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label>Tesco</label>
+                <input type="text" id="cat_tesco" placeholder="e.g. TSC-901">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label>B&Q</label>
+                <input type="text" id="cat_bnq" placeholder="e.g. BQ-7731">
+            </div>
+            <div class="modal-actions">
+                <button class="secondary-btn" onclick="closeModal('addCategoryModal')">Cancel</button>
+                <button class="primary-btn" onclick="saveCategoryItem()">Save Category</button>
             </div>
         </div>
     </div>
@@ -665,7 +803,7 @@
                     <form id="form-tshirts" class="form-section">
                         <div class="form-group">
                             <label>T-Shirt Age/Colour</label>
-                            <input type="text" id="t_colour" placeholder="e.g. Kids Black, Adults Neon Pink" required>
+                            <input type="text" id="t_colour" placeholder="Kids Black, Adults Neon Pink" required>
                         </div>
                         <label>Style</label>
                         <div class="radio-group">
@@ -749,6 +887,27 @@
             </div>
         </div>
 
+        <!-- ==========================================
+             TOOL 3: CATEGORY IDS
+        =========================================== -->
+        <div id="tool-cat" class="tool-view">
+            <div class="header">
+                <h1>Category ID Finder</h1>
+                <p>Search for a product type and click any Category ID to copy it.</p>
+            </div>
+            
+            <div class="add-hex-panel">
+                <input type="text" id="searchCatInput" class="search-input" placeholder="Search product type (e.g. costume, t-shirt, dress)..." onkeyup="filterCategoryGrid()">
+                <button id="adminAddCatBtn" class="admin-add-cat-btn" style="display: none;" onclick="openModal('addCategoryModal')">+ Add Product Category</button>
+            </div>
+
+            <div class="panel" style="max-width: 1000px; margin: 0 auto;">
+                <div id="category-container">
+                    <!-- JavaScript will inject category cards here -->
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- MAIN SCRIPT -->
@@ -774,16 +933,21 @@
 
         function updateAdminUI() {
             const adminBtn = document.getElementById('nav-admin');
+            const addCatBtn = document.getElementById('adminAddCatBtn');
+
             if (isAdmin) {
                 adminBtn.textContent = 'Admin Logout';
                 adminBtn.style.borderColor = '#10b981';
                 adminBtn.style.color = '#10b981';
+                if(addCatBtn) addCatBtn.style.display = 'block';
             } else {
                 adminBtn.textContent = 'Admin Login';
                 adminBtn.style.borderColor = 'rgba(244, 63, 94, 0.4)';
                 adminBtn.style.color = '#f43f5e';
+                if(addCatBtn) addCatBtn.style.display = 'none';
             }
             renderHexGrid(true);
+            renderCategoryGrid(true);
         }
 
         function toggleAdminState() {
@@ -838,9 +1002,12 @@
             
             if(appId === 'tool-claude') {
                 document.getElementById('nav-claude').classList.add('active');
-            } else {
+            } else if(appId === 'tool-hex') {
                 document.getElementById('nav-hex').classList.add('active');
                 renderHexGrid(true);
+            } else if(appId === 'tool-cat') {
+                document.getElementById('nav-cat').classList.add('active');
+                renderCategoryGrid(true);
             }
         }
 
@@ -1030,7 +1197,7 @@
             colorsArray.forEach(hex => {
                 let deleteBtn = isAdmin ? `<button class="delete-hex-btn" onclick="deleteHex(event, '${hex}')" title="Delete Colour">✕</button>` : '';
                 chunk += `
-                    <div class="hex-card" onclick="copyHex('${hex}')">
+                    <div class="hex-card" onclick="copyValue('${hex.toUpperCase()}', 'Hex code ${hex.toUpperCase()} copied!')">
                         ${deleteBtn}
                         <div class="hex-swatch" style="background-color: ${hex};"></div>
                         <div class="hex-label">${hex.toUpperCase()}</div>
@@ -1061,10 +1228,11 @@
             }
         }
 
-        /* --- HEX SEARCH LOGIC --- */
         function filterHexGrid() {
-            const query = document.getElementById('searchHexInput').value.toLowerCase();
-            const categories = document.querySelectorAll('.hex-category');
+            const inputEl = document.getElementById('searchHexInput');
+            if(!inputEl) return;
+            const query = inputEl.value.toLowerCase();
+            const categories = document.querySelectorAll('#hex-container .hex-category');
             
             categories.forEach(category => {
                 const title = category.querySelector('h3').textContent.toLowerCase();
@@ -1075,10 +1243,174 @@
             });
         }
 
+
+        /* ---------------------------------------------------
+           CATEGORY ID FINDER LOGIC & DATA
+        --------------------------------------------------- */
+        
+        const defaultCategories = [
+            {
+                type: "Costumes & Fancy Dress",
+                channels: {
+                    amazon: "2409725031",
+                    ebay: "11450",
+                    shein: "1732",
+                    debenhams: "DEB-408",
+                    therange: "TR-8820",
+                    tesco: "TSC-901",
+                    bnq: "BQ-7731"
+                }
+            },
+            {
+                type: "T-Shirts & Tops",
+                channels: {
+                    amazon: "1040662",
+                    ebay: "15687",
+                    shein: "1821",
+                    debenhams: "DEB-102",
+                    therange: "TR-1044",
+                    tesco: "TSC-110",
+                    bnq: "BQ-0012"
+                }
+            }
+        ];
+
+        let customCategories = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
+        let deletedCategories = JSON.parse(localStorage.getItem('userDeletedCategories')) || [];
+
+        function renderCategoryGrid(force = false) {
+            const container = document.getElementById('category-container');
+            if(!container) return;
+            if (!force && container.innerHTML !== '') return;
+
+            container.innerHTML = '';
+            let html = '';
+
+            // Combine defaults (not deleted) and customs
+            let allCats = defaultCategories
+                .filter(cat => !deletedCategories.includes(cat.type))
+                .concat(customCategories);
+
+            if(allCats.length === 0) {
+                container.innerHTML = `<div class="empty-state" style="padding: 3rem;">No category IDs found. ${isAdmin ? 'Click "+ Add Product Category" to add one!' : ''}</div>`;
+                return;
+            }
+
+            allCats.forEach(cat => {
+                let deleteBtn = isAdmin ? `<button class="delete-hex-btn" onclick="deleteCategory(event, '${cat.type}')" title="Delete Category">✕</button>` : '';
+                
+                html += `
+                    <div class="category-card" data-title="${cat.type.toLowerCase()}">
+                        ${deleteBtn}
+                        <div class="category-card-header">
+                            <div class="category-title">${cat.type}</div>
+                        </div>
+                        <div class="channels-grid">
+                            ${generateChannelItemHTML("Amazon", cat.channels.amazon)}
+                            ${generateChannelItemHTML("eBay", cat.channels.ebay)}
+                            ${generateChannelItemHTML("Shein", cat.channels.shein)}
+                            ${generateChannelItemHTML("Debenhams", cat.channels.debenhams)}
+                            ${generateChannelItemHTML("The Range", cat.channels.therange)}
+                            ${generateChannelItemHTML("Tesco", cat.channels.tesco)}
+                            ${generateChannelItemHTML("B&Q", cat.channels.bnq)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            filterCategoryGrid();
+        }
+
+        function generateChannelItemHTML(channelName, code) {
+            let hasCode = code && code.trim() !== '';
+            let codeDisplay = hasCode ? code : 'N/A';
+            let emptyClass = hasCode ? '' : 'empty';
+            let clickAction = hasCode ? `onclick="copyValue('${code}', '${channelName} Category ID copied!')"` : `onclick="showToast('No ID available for ${channelName}', true)"`;
+
+            return `
+                <div class="channel-item" ${clickAction}>
+                    <span class="channel-name">${channelName}</span>
+                    <span class="channel-id ${emptyClass}">${codeDisplay}</span>
+                </div>
+            `;
+        }
+
+        function filterCategoryGrid() {
+            const inputEl = document.getElementById('searchCatInput');
+            if(!inputEl) return;
+            const query = inputEl.value.toLowerCase();
+            const cards = document.querySelectorAll('#category-container .category-card');
+
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title');
+                card.style.display = title.includes(query) ? 'block' : 'none';
+            });
+        }
+
+        function saveCategoryItem() {
+            const type = document.getElementById('cat_productType').value.trim();
+            if(!type) {
+                showToast("Please enter a Product Type name", true);
+                return;
+            }
+
+            const newCategory = {
+                type: type,
+                channels: {
+                    amazon: document.getElementById('cat_amazon').value.trim(),
+                    ebay: document.getElementById('cat_ebay').value.trim(),
+                    shein: document.getElementById('cat_shein').value.trim(),
+                    debenhams: document.getElementById('cat_debenhams').value.trim(),
+                    therange: document.getElementById('cat_therange').value.trim(),
+                    tesco: document.getElementById('cat_tesco').value.trim(),
+                    bnq: document.getElementById('cat_bnq').value.trim()
+                }
+            };
+
+            customCategories.push(newCategory);
+            localStorage.setItem('userCustomCategories', JSON.stringify(customCategories));
+            
+            // Clear inputs
+            document.getElementById('cat_productType').value = '';
+            document.getElementById('cat_amazon').value = '';
+            document.getElementById('cat_ebay').value = '';
+            document.getElementById('cat_shein').value = '';
+            document.getElementById('cat_debenhams').value = '';
+            document.getElementById('cat_therange').value = '';
+            document.getElementById('cat_tesco').value = '';
+            document.getElementById('cat_bnq').value = '';
+
+            showToast(`Saved category "${type}"!`);
+            closeModal('addCategoryModal');
+            renderCategoryGrid(true);
+        }
+
+        function deleteCategory(event, categoryType) {
+            event.stopPropagation();
+            if (!isAdmin) return;
+
+            if (confirm(`Are you sure you want to delete the category "${categoryType}"?`)) {
+                // Check if in customs
+                if (customCategories.some(c => c.type === categoryType)) {
+                    customCategories = customCategories.filter(c => c.type !== categoryType);
+                    localStorage.setItem('userCustomCategories', JSON.stringify(customCategories));
+                } else {
+                    deletedCategories.push(categoryType);
+                    localStorage.setItem('userDeletedCategories', JSON.stringify(deletedCategories));
+                }
+
+                showToast(`Deleted category "${categoryType}"`);
+                renderCategoryGrid(true);
+            }
+        }
+
+
         /* --- MODAL LOGIC & CUSTOM HEX ADDITION --- */
         function openModal(id) {
             document.getElementById(id).classList.add('active');
             if(id === 'addHexModal') document.getElementById('modalHexInput').focus();
+            if(id === 'addCategoryModal') document.getElementById('cat_productType').focus();
             if(id === 'adminLoginModal') document.getElementById('adminUser').focus();
         }
 
@@ -1148,9 +1480,9 @@
             renderHexGrid(true); 
         }
 
-        function copyHex(hexCode) {
-            navigator.clipboard.writeText(hexCode.toUpperCase()).then(() => {
-                showToast(`${hexCode.toUpperCase()} copied!`);
+        function copyValue(val, message) {
+            navigator.clipboard.writeText(val).then(() => {
+                showToast(message || `Copied ${val}!`);
             });
         }
 
