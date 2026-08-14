@@ -58,6 +58,15 @@ async function initDb() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+
+        // FORCE FIX: If the table was made in an older version, this forces it to add the missing column
+        try {
+            await pool.query('ALTER TABLE categories ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;');
+            console.log("Added missing is_deleted column to categories table.");
+        } catch (e) {
+            // Column already exists, safe to ignore
+        }
+
         console.log('Database connected and initialized successfully!');
     } catch (err) {
         console.error('Error initializing database:', err);
@@ -112,6 +121,7 @@ app.get('/api/categories', async (req, res) => {
         const result = await pool.query('SELECT * FROM categories WHERE is_deleted = FALSE ORDER BY created_at ASC');
         res.json({ success: true, categories: result.rows });
     } catch (err) {
+        console.error("Fetch categories error:", err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
@@ -135,7 +145,6 @@ app.post('/api/categories', async (req, res) => {
 app.delete('/api/categories/:productType', async (req, res) => {
     if (!req.session || !req.session.isAdmin) return res.status(403).json({ success: false });
     try {
-        // We use UPDATE is_deleted = TRUE so it hides defaults properly as well
         await pool.query(`
             INSERT INTO categories (product_type, is_deleted) VALUES ($1, TRUE)
             ON CONFLICT (product_type) DO UPDATE SET is_deleted = TRUE
