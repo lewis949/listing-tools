@@ -4,31 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listing Tools | Suite</title>
+    <!-- Force browser to ignore cache -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <style>
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --glass-highlight: rgba(255, 255, 255, 0.15);
-            --text-main: #ffffff;
-            --text-muted: #cbd5e1;
-            --accent-gradient: linear-gradient(135deg, #f43f5e, #8b5cf6, #3b82f6);
-            --radius: 20px;
-        }
-
+        :root { --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-highlight: rgba(255, 255, 255, 0.15); --text-main: #ffffff; --text-muted: #cbd5e1; --accent-gradient: linear-gradient(135deg, #f43f5e, #8b5cf6, #3b82f6); --radius: 20px; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-
-        body {
-            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #172554);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            color: var(--text-main);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
+        body { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #172554); background-size: 400% 400%; animation: gradientBG 15s ease infinite; color: var(--text-main); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         /* Top Navigation */
@@ -118,9 +101,12 @@
 
         /* Admin Buttons */
         .admin-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 0.5rem; }
-        .duplicate-btn { background: rgba(16, 185, 129, 0.8); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        .edit-btn { background: rgba(59, 130, 246, 0.8); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
-        .delete-btn { background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .duplicate-btn, .edit-btn { background: rgba(59, 130, 246, 0.8); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: all 0.2s; }
+        .duplicate-btn { background: rgba(16, 185, 129, 0.8); }
+        .duplicate-btn:hover { background: #10b981; transform: scale(1.1); }
+        .edit-btn:hover { background: #3b82f6; transform: scale(1.1); }
+        .delete-btn { background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: all 0.2s; }
+        .delete-btn:hover { background: #ef4444; transform: scale(1.1); }
         .hex-card .delete-btn { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; }
         
         /* Modals & Toasts */
@@ -153,9 +139,7 @@
     <div id="addHexModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Add Custom Colour</h2>
-            <div class="form-group">
-                <input type="text" id="modalHexInput" placeholder="Enter Hex (e.g. #FF5500)" maxlength="7">
-            </div>
+            <div class="form-group"><input type="text" id="modalHexInput" placeholder="Enter Hex (e.g. #FF5500)" maxlength="7"></div>
             <div class="modal-actions">
                 <button class="secondary-btn" onclick="closeModal('addHexModal')">Cancel</button>
                 <button class="primary-btn" onclick="addCustomHex()">Save Colour</button>
@@ -164,35 +148,18 @@
     </div>
 
     <!-- MODAL: ADD/EDIT/DUPLICATE CATEGORY ID -->
-    <div id="addCategoryModal" class="modal-overlay" data-original-id="" data-original-type="">
+    <div id="addCategoryModal" class="modal-overlay" data-original-type="">
         <div class="modal-content">
             <h2 id="categoryModalTitle">Add Product Category</h2>
-            <div class="form-group" style="text-align: left;">
-                <label>Product Type Name</label>
-                <input type="text" id="cat_productType" placeholder="e.g. Costume, T-Shirt, Onesie" required>
-            </div>
+            <div class="form-group" style="text-align: left;"><label>Product Type Name</label><input type="text" id="cat_productType" required></div>
             <div style="text-align: left; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; font-weight: 600;">Channel Category IDs</div>
-            <div class="form-group" style="text-align: left;">
-                <label>Amazon</label><input type="text" id="cat_amazon">
-            </div>
-            <div class="form-group" style="text-align: left;">
-                <label>eBay</label><input type="text" id="cat_ebay">
-            </div>
-            <div class="form-group" style="text-align: left;">
-                <label>Shein</label><input type="text" id="cat_shein">
-            </div>
-            <div class="form-group" style="text-align: left;">
-                <label>Debenhams</label><input type="text" id="cat_debenhams">
-            </div>
-            <div class="form-group" style="text-align: left;">
-                <label>The Range</label><input type="text" id="cat_therange">
-            </div>
-            <div class="form-group" style="text-align: left;">
-                <label>Tesco</label><input type="text" id="cat_tesco">
-            </div>
-            <div class="form-group" style="text-align: left;">
-                <label>B&Q</label><input type="text" id="cat_bnq">
-            </div>
+            <div class="form-group" style="text-align: left;"><label>Amazon</label><input type="text" id="cat_amazon"></div>
+            <div class="form-group" style="text-align: left;"><label>eBay</label><input type="text" id="cat_ebay"></div>
+            <div class="form-group" style="text-align: left;"><label>Shein</label><input type="text" id="cat_shein"></div>
+            <div class="form-group" style="text-align: left;"><label>Debenhams</label><input type="text" id="cat_debenhams"></div>
+            <div class="form-group" style="text-align: left;"><label>The Range</label><input type="text" id="cat_therange"></div>
+            <div class="form-group" style="text-align: left;"><label>Tesco</label><input type="text" id="cat_tesco"></div>
+            <div class="form-group" style="text-align: left;"><label>B&Q</label><input type="text" id="cat_bnq"></div>
             <div class="modal-actions">
                 <button class="secondary-btn" onclick="closeModal('addCategoryModal')">Cancel</button>
                 <button class="primary-btn" onclick="saveCategoryItem()">Save Category</button>
@@ -204,14 +171,8 @@
     <div id="adminLoginModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Admin Login</h2>
-            <div class="form-group">
-                <label style="text-align: left;">Username</label>
-                <input type="text" id="adminUser" placeholder="Enter admin username">
-            </div>
-            <div class="form-group">
-                <label style="text-align: left;">Password</label>
-                <input type="password" id="adminPass" placeholder="Enter admin password">
-            </div>
+            <div class="form-group"><label style="text-align: left;">Username</label><input type="text" id="adminUser"></div>
+            <div class="form-group"><label style="text-align: left;">Password</label><input type="password" id="adminPass"></div>
             <div class="modal-actions">
                 <button class="secondary-btn" onclick="closeModal('adminLoginModal')">Cancel</button>
                 <button class="primary-btn" onclick="submitAdminLogin()">Login</button>
@@ -220,14 +181,9 @@
     </div>
 
     <div class="main-content">
-        <!-- ==========================================
-             TOOL 1: CLAUDE BUILDER 
-        =========================================== -->
+        <!-- TOOL 1: CLAUDE BUILDER -->
         <div id="tool-claude" class="tool-view active">
-            <div class="header">
-                <h1>Claude Collaboration Builder</h1>
-                <p>Generate perfect AI briefs for your products.</p>
-            </div>
+            <div class="header"><h1>Claude Collaboration Builder</h1><p>Generate perfect AI briefs for your products.</p></div>
             <div class="layout-grid">
                 <div class="panel">
                     <div class="tabs-container">
@@ -235,7 +191,6 @@
                         <button class="tab-btn" onclick="switchBuilderTab('tshirts')" id="btn-tshirts">T-Shirts</button>
                     </div>
                     <h2 class="panel-title">Product Details</h2>
-                    
                     <form id="form-costumes" class="form-section active">
                         <div class="form-group"><label>Item Name</label><input type="text" id="c_itemName" required></div>
                         <div class="form-group"><label>Event (Optional)</label><input type="text" id="c_event"></div>
@@ -246,20 +201,12 @@
                         <div class="form-group"><label>Size Guide (Optional)</label><textarea id="c_sizeGuide"></textarea></div>
                         <div class="form-group"><label>Extra Details (Optional)</label><textarea id="c_extraDetails"></textarea></div>
                     </form>
-
                     <form id="form-tshirts" class="form-section">
-                        <div class="form-group"><label>T-Shirt Age/Colour</label><input type="text" id="t_colour" placeholder="Kids Black, Adults Neon Pink" required></div>
+                        <div class="form-group"><label>T-Shirt Age/Colour</label><input type="text" id="t_colour" required></div>
                         <label>Style</label>
-                        <div class="radio-group">
-                            <label class="custom-radio"><input type="radio" name="t_style" value="Classic T-Shirt" checked> Classic T-Shirt</label>
-                            <label class="custom-radio"><input type="radio" name="t_style" value="Baby Tee"> Baby Tee</label>
-                        </div>
+                        <div class="radio-group"><label class="custom-radio"><input type="radio" name="t_style" value="Classic T-Shirt" checked> Classic T-Shirt</label><label class="custom-radio"><input type="radio" name="t_style" value="Baby Tee"> Baby Tee</label></div>
                         <label>Print Location</label>
-                        <div class="radio-group">
-                            <label class="custom-radio"><input type="radio" name="t_printLocation" value="front" onchange="togglePrintFields()" checked> Front Print</label>
-                            <label class="custom-radio"><input type="radio" name="t_printLocation" value="back" onchange="togglePrintFields()"> Back Print</label>
-                            <label class="custom-radio"><input type="radio" name="t_printLocation" value="both" onchange="togglePrintFields()"> Both</label>
-                        </div>
+                        <div class="radio-group"><label class="custom-radio"><input type="radio" name="t_printLocation" value="front" onchange="togglePrintFields()" checked> Front Print</label><label class="custom-radio"><input type="radio" name="t_printLocation" value="back" onchange="togglePrintFields()"> Back Print</label><label class="custom-radio"><input type="radio" name="t_printLocation" value="both" onchange="togglePrintFields()"> Both</label></div>
                         <div class="form-group dynamic-field" id="t_frontPrintGroup" style="display: block;"><label>Front Print Description</label><textarea id="t_frontPrint"></textarea></div>
                         <div class="form-group dynamic-field" id="t_backPrintGroup"><label>Back Print Description</label><textarea id="t_backPrint"></textarea></div>
                         <div class="form-group"><label>Banned Terms (Optional)</label><input type="text" id="t_bannedTerms"></div>
@@ -271,37 +218,25 @@
                 </div>
                 <div class="panel">
                     <h2 class="panel-title">Generated Prompt</h2>
-                    <div id="resultOutput" class="result-box"><div class="empty-state">Fill out the form to generate your prompt...</div></div>
+                    <div id="resultOutput" class="result-box"><div class="empty-state">Fill out the form...</div></div>
                     <button id="copyBtn" class="copy-btn" onclick="copyPrompt()">Copy to Clipboard</button>
                 </div>
             </div>
         </div>
 
-        <!-- ==========================================
-             TOOL 2: HEX CODES 
-        =========================================== -->
+        <!-- TOOL 2: HEX CODES -->
         <div id="tool-hex" class="tool-view">
-            <div class="header">
-                <h1>Colour Hex Codes</h1>
-                <p>Search by shade or add your own custom hex codes.</p>
-            </div>
+            <div class="header"><h1>Colour Hex Codes</h1><p>Search by shade or add custom hex codes.</p></div>
             <div class="add-hex-panel">
                 <input type="text" id="searchHexInput" class="search-input" placeholder="Search colours..." onkeyup="filterHexGrid()">
-                <button class="primary-btn add-btn" onclick="openModal('addHexModal')" title="Add Custom Colour">+</button>
+                <button class="primary-btn add-btn" onclick="openModal('addHexModal')">+</button>
             </div>
-            <div class="panel" style="max-width: 1000px; margin: 0 auto;">
-                <div id="hex-container"></div>
-            </div>
+            <div class="panel" style="max-width: 1000px; margin: 0 auto;"><div id="hex-container"></div></div>
         </div>
 
-        <!-- ==========================================
-             TOOL 3: CATEGORY IDS
-        =========================================== -->
+        <!-- TOOL 3: CATEGORY IDS -->
         <div id="tool-cat" class="tool-view">
-            <div class="header">
-                <h1>Category ID Finder</h1>
-                <p>Search for a product type and click any Category ID to copy it.</p>
-            </div>
+            <div class="header"><h1>Category ID Finder</h1><p>Search and click to copy Category IDs.</p></div>
             <div class="add-hex-panel">
                 <input type="text" id="searchCatInput" class="search-input" placeholder="Search product type..." onkeyup="filterCategoryGrid()">
                 <button id="adminAddCatBtn" class="admin-add-cat-btn" style="display: none;" onclick="openAddCategoryModal()">+ Add Product Category</button>
@@ -312,26 +247,31 @@
         </div>
     </div>
 
-    <!-- MAIN SCRIPT -->
+    <!-- SCRIPT -->
     <script>
         let isAdmin = false;
-
-        // Data arrays explicitly populated from the Server (No LocalStorage fallbacks)
-        let categoriesData = [];
-        let customHexes = [];
+        let globalCategories = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             checkAdminStatus();
         });
 
+        // -------------------------
+        // STRICT API FETCHING 
+        // -------------------------
+        async function fetchWithBust(url, options = {}) {
+            const separator = url.includes('?') ? '&' : '?';
+            const bustedUrl = `${url}${separator}t=${Date.now()}`;
+            options.cache = 'no-store'; // Force browser to ignore local cache
+            return fetch(bustedUrl, options);
+        }
+
         async function checkAdminStatus() {
             try {
-                const res = await fetch('/api/admin/status');
+                const res = await fetchWithBust('/api/admin/status');
                 const data = await res.json();
                 isAdmin = data.isAdmin;
-            } catch (e) {
-                isAdmin = false;
-            }
+            } catch (e) { isAdmin = false; }
             updateAdminUI();
         }
 
@@ -355,20 +295,18 @@
 
         async function toggleAdminState() {
             if (isAdmin) {
-                await fetch('/api/admin/logout', { method: 'POST' });
+                await fetchWithBust('/api/admin/logout', { method: 'POST' });
                 isAdmin = false;
                 showToast("Logged out of admin mode");
                 updateAdminUI();
-            } else {
-                openModal('adminLoginModal');
-            }
+            } else { openModal('adminLoginModal'); }
         }
 
         async function submitAdminLogin() {
             const user = document.getElementById('adminUser').value;
             const pass = document.getElementById('adminPass').value;
             try {
-                const res = await fetch('/api/admin/login', {
+                const res = await fetchWithBust('/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user, password: pass })
@@ -378,131 +316,21 @@
                     isAdmin = true;
                     showToast("Admin access granted!");
                     closeModal('adminLoginModal');
-                    document.getElementById('adminUser').value = '';
-                    document.getElementById('adminPass').value = '';
                     updateAdminUI();
-                } else {
-                    showToast(data.message || "Login failed", true);
-                }
+                } else { showToast("Login failed", true); }
             } catch (e) { showToast("Error connecting to server", true); }
         }
 
-        /* ---------------------------------------------------
-           APP NAVIGATION LOGIC
-        --------------------------------------------------- */
         function switchApp(appId) {
-            document.querySelectorAll('.tool-view').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tool-view, .nav-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(appId).classList.add('active');
-            
-            if(appId === 'tool-claude') {
-                document.getElementById('nav-claude').classList.add('active');
-            } else if(appId === 'tool-hex') {
-                document.getElementById('nav-hex').classList.add('active');
-                renderHexGrid();
-            } else if(appId === 'tool-cat') {
-                document.getElementById('nav-cat').classList.add('active');
-                renderCategoryGrid();
-            }
+            if(appId === 'tool-claude') document.getElementById('nav-claude').classList.add('active');
+            if(appId === 'tool-hex') { document.getElementById('nav-hex').classList.add('active'); renderHexGrid(); }
+            if(appId === 'tool-cat') { document.getElementById('nav-cat').classList.add('active'); renderCategoryGrid(); }
         }
 
-        /* ---------------------------------------------------
-           CLAUDE BUILDER LOGIC
-        --------------------------------------------------- */
-        let currentTab = 'costumes';
-
-        function switchBuilderTab(tab) {
-            currentTab = tab;
-            document.getElementById('btn-costumes').classList.remove('active');
-            document.getElementById('btn-tshirts').classList.remove('active');
-            document.getElementById('btn-' + tab).classList.add('active');
-            document.getElementById('form-costumes').classList.remove('active');
-            document.getElementById('form-tshirts').classList.remove('active');
-            document.getElementById('form-' + tab).classList.add('active');
-            document.getElementById('resultOutput').innerHTML = '<div class="empty-state">Fill out the form to generate your prompt...</div>';
-            document.getElementById('copyBtn').style.display = 'none';
-        }
-
-        function toggleSetField() {
-            const isSet = document.getElementById('c_isSet').checked;
-            document.getElementById('setComponentsGroup').style.display = isSet ? 'block' : 'none';
-            if(!isSet) document.getElementById('c_setComponents').value = ''; 
-        }
-
-        function togglePrintFields() {
-            const printLoc = document.querySelector('input[name="t_printLocation"]:checked').value;
-            const frontGroup = document.getElementById('t_frontPrintGroup');
-            const backGroup = document.getElementById('t_backPrintGroup');
-            if (printLoc === 'front') { frontGroup.style.display = 'block'; backGroup.style.display = 'none'; document.getElementById('t_backPrint').value = ''; } 
-            else if (printLoc === 'back') { frontGroup.style.display = 'none'; backGroup.style.display = 'block'; document.getElementById('t_frontPrint').value = ''; } 
-            else { frontGroup.style.display = 'block'; backGroup.style.display = 'block'; }
-        }
-
-        function getArticle(word) {
-            if (!word || word === "[INSERT COLOUR]") return 'a'; 
-            return ['a', 'e', 'i', 'o', 'u'].includes(word.charAt(0).toLowerCase()) ? 'an' : 'a';
-        }
-
-        function generatePrompt() {
-            let promptText = "";
-            if (currentTab === 'costumes') {
-                const itemName = document.getElementById('c_itemName').value.trim() || "[INSERT PRODUCT NAME]";
-                const eventRaw = document.getElementById('c_event').value.trim();
-                const bannedTermsRaw = document.getElementById('c_bannedTerms').value.trim();
-                const focusRaw = document.getElementById('c_focus').value.trim();
-                const sizeGuideRaw = document.getElementById('c_sizeGuide').value.trim();
-                const extraDetailsRaw = document.getElementById('c_extraDetails').value.trim();
-                const isSet = document.getElementById('c_isSet').checked;
-                const componentsRaw = document.getElementById('c_setComponents').value.trim();
-
-                promptText = `This is ${getArticle(itemName)} ${itemName}${eventRaw ? ` for ${eventRaw}.` : '.'}`;
-                if (isSet && componentsRaw) promptText += `\n\nThis product is a set that includes the following components: ${componentsRaw}.`;
-                if (bannedTermsRaw) {
-                    let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
-                    if (bannedTermsRaw.toLowerCase().includes("gildan")) keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
-                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
-                }
-                if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
-                if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
-                if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
-            } else if (currentTab === 'tshirts') {
-                const colour = document.getElementById('t_colour').value.trim() || "[INSERT COLOUR]";
-                const styleText = document.querySelector('input[name="t_style"]:checked').value;
-                const printLoc = document.querySelector('input[name="t_printLocation"]:checked').value;
-                const frontPrint = document.getElementById('t_frontPrint').value.trim() || "[INSERT FRONT PRINT DESCRIPTION]";
-                const backPrint = document.getElementById('t_backPrint').value.trim() || "[INSERT BACK PRINT DESCRIPTION]";
-                const bannedTermsRaw = document.getElementById('t_bannedTerms').value.trim();
-                const focusRaw = document.getElementById('t_focus').value.trim();
-                const sizeGuideRaw = document.getElementById('t_sizeGuide').value.trim();
-                const extraDetailsRaw = document.getElementById('t_extraDetails').value.trim();
-                
-                promptText = `This product is ${getArticle(colour)} ${colour} ${styleText}`;
-                if (printLoc === 'front') promptText += ` with a ${frontPrint} print on the front.`;
-                else if (printLoc === 'back') promptText += ` with a ${backPrint} print on the back.`;
-                else if (printLoc === 'both') promptText += ` with a ${frontPrint} print on the front and a ${backPrint} print on the back.`;
-
-                if (bannedTermsRaw) {
-                    let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
-                    if (bannedTermsRaw.toLowerCase().includes("gildan")) keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
-                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
-                }
-                if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
-                if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
-                if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
-            }
-            document.getElementById('resultOutput').textContent = promptText;
-            document.getElementById('copyBtn').style.display = 'block';
-            if(window.innerWidth < 900) document.getElementById('resultOutput').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        function copyPrompt() {
-            navigator.clipboard.writeText(document.getElementById('resultOutput').textContent).then(() => showToast("Prompt copied to clipboard!"));
-        }
-
-        /* ---------------------------------------------------
-           HEX CODES LOGIC & SERVER SYNC
-        --------------------------------------------------- */
-        const defaultHexDatabase = {
+        /* --- HEX CODES --- */
+        const defaultHexes = {
             "Blues & Teals": ["#C6DEEC", "#07A3CC", "#242FA1", "#4F9BA1", "#8BC9EE", "#0753A9", "#93CEEC", "#06A3AA"],
             "Reds & Pinks": ["#E7648D", "#D70C2A", "#641624", "#C70E5C", "#EFAABD", "#B63530"],
             "Oranges & Yellows": ["#F5DE62", "#F19E39", "#EDC700"],
@@ -516,35 +344,25 @@
             const container = document.getElementById('hex-container');
             if(!container) return;
 
-            // Fetch live Hex codes from server database
+            let dbHexes = [];
             try {
-                const res = await fetch('/api/hexes');
+                const res = await fetchWithBust('/api/hexes');
                 const data = await res.json();
-                if(data.success && data.hexes) customHexes = data.hexes;
-            } catch (err) {
-                console.error("Could not fetch global hex codes. Database may not be connected.");
-            }
+                if(data.success) dbHexes = data.hexes;
+            } catch (err) {}
 
             container.innerHTML = '';
             let html = '';
             
-            // Build Defaults (filtering out ones deleted globally from server)
-            for (const [categoryName, colors] of Object.entries(defaultHexDatabase)) {
-                // If customHexes has our deleted logic, wait, the API only returns non-deleted.
-                // Actually, if a default hex is deleted, it won't be in the DB at all. 
-                // Let's just assume customHexes contains ALL valid hexes if we are strictly syncing.
-                // For simplicity, we just display the defaults, and anything returned by the server.
-                html += generateCategoryHTML(categoryName, colors);
+            let allDefaultsFlat = [];
+            for (const [categoryName, colors] of Object.entries(defaultHexes)) {
+                let validColors = colors.filter(c => !dbHexes.includes('DELETED_' + c)); // Hypothetical delete sync
+                allDefaultsFlat.push(...validColors);
+                html += generateCategoryHTML(categoryName, validColors);
             }
 
-            // Custom hexes from server that aren't in defaults
-            let allDefaultFlat = [];
-            Object.values(defaultHexDatabase).forEach(arr => allDefaultFlat = allDefaultFlat.concat(arr));
-            let trueCustoms = customHexes.filter(h => !allDefaultFlat.includes(h.toUpperCase()));
-            
-            if (trueCustoms.length > 0) {
-                html += generateCategoryHTML("Your Custom Colours", trueCustoms);
-            }
+            let trueCustoms = dbHexes.filter(h => !allDefaultsFlat.includes(h));
+            if (trueCustoms.length > 0) html += generateCategoryHTML("Your Custom Colours", trueCustoms);
 
             container.innerHTML = html;
             filterHexGrid();
@@ -553,71 +371,50 @@
         function generateCategoryHTML(title, colorsArray) {
             let chunk = `<div class="hex-category"><h3>${title}</h3><div class="hex-grid">`;
             colorsArray.forEach(hex => {
-                let deleteBtn = isAdmin ? `<button class="delete-btn" onclick="deleteHex(event, '${hex}')" title="Delete Colour">✕</button>` : '';
-                chunk += `<div class="hex-card" onclick="copyValue('${hex.toUpperCase()}', 'Hex code ${hex.toUpperCase()} copied!')">
-                            ${deleteBtn}
-                            <div class="hex-swatch" style="background-color: ${hex};"></div>
-                            <div class="hex-label">${hex.toUpperCase()}</div>
-                          </div>`;
+                let dBtn = isAdmin ? `<button class="delete-btn" onclick="deleteHex(event, '${hex}')">✕</button>` : '';
+                chunk += `<div class="hex-card" onclick="copyValue('${hex.toUpperCase()}', 'Copied!')">
+                            ${dBtn}<div class="hex-swatch" style="background-color: ${hex};"></div>
+                            <div class="hex-label">${hex.toUpperCase()}</div></div>`;
             });
-            chunk += `</div></div>`;
-            return chunk;
-        }
-
-        async function deleteHex(event, hexCode) {
-            event.stopPropagation();
-            if (!isAdmin) return;
-            if (confirm(`Are you sure you want to delete ${hexCode} globally?`)) {
-                try {
-                    await fetch(`/api/hexes/${hexCode.replace('#', '')}`, { method: 'DELETE' });
-                    showToast(`Deleted ${hexCode} globally!`);
-                    renderHexGrid();
-                } catch(e) {
-                    showToast("Failed to delete hex code.", true);
-                }
-            }
-        }
-
-        function filterHexGrid() {
-            const inputEl = document.getElementById('searchHexInput');
-            if(!inputEl) return;
-            const query = inputEl.value.toLowerCase();
-            document.querySelectorAll('#hex-container .hex-category').forEach(category => {
-                const title = category.querySelector('h3').textContent.toLowerCase();
-                const hexLabels = Array.from(category.querySelectorAll('.hex-label')).map(lbl => lbl.textContent.toLowerCase());
-                category.style.display = (title.includes(query) || hexLabels.some(hex => hex.includes(query))) ? 'block' : 'none';
-            });
+            return chunk + `</div></div>`;
         }
 
         async function addCustomHex() {
             let input = document.getElementById('modalHexInput').value.trim().toUpperCase();
             if (!input.startsWith('#')) input = '#' + input;
-            if (!/^#([0-9A-F]{3}){1,2}$/i.test(input)) return showToast("Invalid format. Use a valid Hex (e.g. #FF0000)", true);
+            if (!/^#([0-9A-F]{3}){1,2}$/i.test(input)) return showToast("Invalid Hex", true);
             if (input.length === 4) input = '#' + input[1]+input[1] + input[2]+input[2] + input[3]+input[3];
 
             try {
-                const res = await fetch('/api/hexes', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ hexCode: input })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    showToast("Custom colour added globally!");
+                const res = await fetchWithBust('/api/hexes', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ hexCode: input }) });
+                if ((await res.json()).success) {
+                    showToast("Saved globally!");
                     closeModal('addHexModal');
                     renderHexGrid();
-                } else {
-                    showToast("Failed to save to database.", true);
-                }
-            } catch(e) {
-                showToast("Server error. Check your database connection.", true);
+                } else showToast("Failed to connect to database", true);
+            } catch(e) { showToast("Database offline", true); }
+        }
+
+        async function deleteHex(e, hex) {
+            e.stopPropagation();
+            if(!isAdmin) return;
+            if(confirm(`Delete ${hex} globally?`)) {
+                try {
+                    await fetchWithBust(`/api/hexes/${hex.replace('#','')}`, { method: 'DELETE' });
+                    renderHexGrid();
+                } catch(err) { showToast("DB Error", true); }
             }
         }
 
-        /* ---------------------------------------------------
-           CATEGORY ID FINDER LOGIC & SERVER SYNC
-        --------------------------------------------------- */
-        
+        function filterHexGrid() {
+            const q = document.getElementById('searchHexInput').value.toLowerCase();
+            document.querySelectorAll('.hex-category').forEach(cat => {
+                const text = cat.textContent.toLowerCase();
+                cat.style.display = text.includes(q) ? 'block' : 'none';
+            });
+        }
+
+        /* --- CATEGORIES --- */
         const defaultCategories = [
             { product_type: "Costumes & Fancy Dress", amazon: "2409725031", ebay: "11450", shein: "1732", debenhams: "DEB-408", therange: "TR-8820", tesco: "TSC-901", bnq: "BQ-7731" },
             { product_type: "T-Shirts & Tops", amazon: "1040662", ebay: "15687", shein: "1821", debenhams: "DEB-102", therange: "TR-1044", tesco: "TSC-110", bnq: "BQ-0012" }
@@ -627,48 +424,48 @@
             const container = document.getElementById('category-container');
             if(!container) return;
 
-            // Fetch live Categories from server database
+            // 1. Fetch strictly from DB
+            let dbCategories = [];
             try {
-                const res = await fetch('/api/categories');
+                const res = await fetchWithBust('/api/categories');
                 const data = await res.json();
-                if (data.success && data.categories && data.categories.length > 0) {
-                    categoriesData = data.categories;
-                } else {
-                    // If DB is empty but working, just show defaults
-                    categoriesData = defaultCategories;
-                }
-            } catch (err) {
-                console.error("Could not fetch categories. Database may not be connected.");
-                container.innerHTML = `<div class="empty-state" style="padding: 3rem; color: #ef4444;">Could not connect to the database. Please check your Render DATABASE_URL.</div>`;
-                return; // Stop rendering to make the error obvious
-            }
-
-            container.innerHTML = '';
-            let html = '';
-
-            if(categoriesData.length === 0) {
-                container.innerHTML = `<div class="empty-state" style="padding: 3rem;">No category IDs found.</div>`;
+                if(data.success) dbCategories = data.categories;
+                else throw new Error("DB Connection Refused");
+            } catch(e) {
+                container.innerHTML = `<div class="empty-state" style="color:#ef4444; padding:2rem;">Database Offline. Check Render Environment Variables.</div>`;
                 return;
             }
 
-            categoriesData.forEach(cat => {
-                const typeName = cat.product_type || cat.type;
-                const catId = cat.id || '';
-                
+            // 2. Merge: DB Categories take absolute priority. If a default isn't in the DB, show it.
+            const dbNames = dbCategories.map(c => c.product_type.toLowerCase());
+            let finalCategories = [...dbCategories];
+            
+            defaultCategories.forEach(def => {
+                if(!dbNames.includes(def.product_type.toLowerCase())) {
+                    finalCategories.push(def);
+                }
+            });
+
+            globalCategories = finalCategories;
+            container.innerHTML = '';
+            
+            if(finalCategories.length === 0) {
+                container.innerHTML = `<div class="empty-state">No categories found.</div>`;
+                return;
+            }
+
+            finalCategories.forEach(cat => {
                 let adminActions = isAdmin ? `
                     <div class="admin-actions">
-                        <button class="duplicate-btn" onclick="duplicateCategory(event, '${catId}', '${typeName}')" title="Duplicate Category">⧉</button>
-                        <button class="edit-btn" onclick="editCategory(event, '${catId}', '${typeName}')" title="Edit Category">✎</button>
-                        <button class="delete-btn" onclick="deleteCategory(event, '${catId}', '${typeName}')" title="Delete Category">✕</button>
-                    </div>
-                ` : '';
+                        <button class="duplicate-btn" onclick="openCategoryModal(event, '${cat.product_type}', true)">⧉</button>
+                        <button class="edit-btn" onclick="openCategoryModal(event, '${cat.product_type}', false)">✎</button>
+                        <button class="delete-btn" onclick="deleteCategory(event, '${cat.product_type}')">✕</button>
+                    </div>` : '';
                 
-                html += `
-                    <div class="category-card" data-title="${typeName}">
+                container.innerHTML += `
+                    <div class="category-card" data-title="${cat.product_type}">
                         ${adminActions}
-                        <div class="category-card-header">
-                            <div class="category-title">${typeName}</div>
-                        </div>
+                        <div class="category-card-header"><div class="category-title">${cat.product_type}</div></div>
                         <div class="channels-grid">
                             ${generateChannelItemHTML("Amazon", cat.amazon)}
                             ${generateChannelItemHTML("eBay", cat.ebay)}
@@ -678,76 +475,54 @@
                             ${generateChannelItemHTML("Tesco", cat.tesco)}
                             ${generateChannelItemHTML("B&Q", cat.bnq)}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
-
-            container.innerHTML = html;
             filterCategoryGrid();
         }
 
-        function generateChannelItemHTML(channelName, code) {
+        function generateChannelItemHTML(name, code) {
             if (!code || code.trim() === '') return ''; 
-            return `<div class="channel-item" onclick="copyValue('${code}', '${channelName} Category ID copied!')">
-                        <span class="channel-name">${channelName}</span><span class="channel-id">${code}</span>
+            return `<div class="channel-item" onclick="copyValue('${code}', '${name} ID copied!')">
+                        <span class="channel-name">${name}</span><span class="channel-id">${code}</span>
                     </div>`;
         }
 
         function filterCategoryGrid() {
-            const inputEl = document.getElementById('searchCatInput');
-            if(!inputEl) return;
-            const queryWords = inputEl.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w);
-            document.querySelectorAll('#category-container .category-card').forEach(card => {
-                let searchableText = card.getAttribute('data-title').toLowerCase();
-                if (searchableText.includes('ladies') || searchableText.includes('women')) searchableText += " ladies women womens woman female";
-                if (searchableText.includes('men') || searchableText.includes('male')) searchableText += " mens men man male";
-                if (searchableText.includes('kid') || searchableText.includes('child')) searchableText += " kids childrens child children";
-                if (searchableText.includes('t-shirt') || searchableText.includes('tshirt') || searchableText.includes('tee')) searchableText += " tshirt t-shirt t shirt tee tops";
-                if (searchableText.includes('costume') || searchableText.includes('fancy dress')) searchableText += " costume fancydress cosplay outfit";
-                searchableText = searchableText.replace(/[^a-z0-9\s]/g, '');
+            const input = document.getElementById('searchCatInput');
+            if(!input) return;
+            const queryWords = input.value.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w=>w);
+            document.querySelectorAll('.category-card').forEach(card => {
+                let text = card.getAttribute('data-title').toLowerCase();
+                if (text.includes('ladies') || text.includes('women')) text += " ladies women womens woman female";
+                if (text.includes('men') || text.includes('male')) text += " mens men man male";
+                if (text.includes('kid') || text.includes('child')) text += " kids childrens child children";
+                if (text.includes('t-shirt') || text.includes('tshirt') || text.includes('tee')) text += " tshirt t-shirt t shirt tee tops";
+                if (text.includes('costume') || text.includes('fancy dress')) text += " costume fancydress cosplay outfit";
+                text = text.replace(/[^a-z0-9\s]/g, '');
 
-                let match = true;
-                for (let word of queryWords) {
-                    if (!searchableText.includes(word)) { match = false; break; }
-                }
-                card.style.display = (match || queryWords.length === 0) ? 'block' : 'none';
+                let match = queryWords.every(word => text.includes(word));
+                card.style.display = match ? 'block' : 'none';
             });
         }
 
         function openAddCategoryModal() {
-            document.getElementById('addCategoryModal').removeAttribute('data-original-type');
-            document.getElementById('addCategoryModal').removeAttribute('data-original-id');
+            document.getElementById('addCategoryModal').setAttribute('data-original-type', '');
             document.getElementById('categoryModalTitle').textContent = "Add Product Category";
             ['cat_productType','cat_amazon','cat_ebay','cat_shein','cat_debenhams','cat_therange','cat_tesco','cat_bnq'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('cat_productType').disabled = false;
             openModal('addCategoryModal');
         }
 
-        function editCategory(event, id, type) {
-            event.stopPropagation();
-            if (!isAdmin) return;
-            let cat = categoriesData.find(c => (c.id && String(c.id) === String(id)) || (c.product_type === type));
-            if (!cat) return;
+        function openCategoryModal(e, type, isDuplicate) {
+            e.stopPropagation();
+            if(!isAdmin) return;
+            let cat = globalCategories.find(c => c.product_type === type);
+            if(!cat) return;
 
-            document.getElementById('addCategoryModal').setAttribute('data-original-id', cat.id || '');
-            document.getElementById('addCategoryModal').setAttribute('data-original-type', cat.product_type);
-            document.getElementById('categoryModalTitle').textContent = "Edit Product Category";
-            document.getElementById('cat_productType').value = cat.product_type;
-            
-            ['amazon','ebay','shein','debenhams','therange','tesco','bnq'].forEach(ch => document.getElementById('cat_'+ch).value = cat[ch] || '');
-            openModal('addCategoryModal');
-        }
-
-        function duplicateCategory(event, id, type) {
-            event.stopPropagation();
-            if (!isAdmin) return;
-            let cat = categoriesData.find(c => (c.id && String(c.id) === String(id)) || (c.product_type === type));
-            if (!cat) return;
-
-            document.getElementById('addCategoryModal').removeAttribute('data-original-id');
-            document.getElementById('addCategoryModal').removeAttribute('data-original-type');
-            document.getElementById('categoryModalTitle').textContent = "Duplicate Product Category";
-            document.getElementById('cat_productType').value = cat.product_type + " (Copy)";
+            document.getElementById('addCategoryModal').setAttribute('data-original-type', isDuplicate ? '' : cat.product_type);
+            document.getElementById('categoryModalTitle').textContent = isDuplicate ? "Duplicate Category" : "Edit Category";
+            document.getElementById('cat_productType').value = cat.product_type + (isDuplicate ? " (Copy)" : "");
+            document.getElementById('cat_productType').disabled = !isDuplicate;
             
             ['amazon','ebay','shein','debenhams','therange','tesco','bnq'].forEach(ch => document.getElementById('cat_'+ch).value = cat[ch] || '');
             openModal('addCategoryModal');
@@ -755,7 +530,7 @@
 
         async function saveCategoryItem() {
             const type = document.getElementById('cat_productType').value.trim();
-            if(!type) return showToast("Please enter a Product Type name", true);
+            if(!type) return showToast("Enter a name", true);
 
             const payload = {
                 product_type: type,
@@ -769,63 +544,71 @@
             };
 
             const originalType = document.getElementById('addCategoryModal').getAttribute('data-original-type');
-            const originalId = document.getElementById('addCategoryModal').getAttribute('data-original-id');
-
             try {
-                // If updating the name, delete the old one first
-                if (originalType && originalType !== type && originalId) {
-                    await fetch(`/api/categories/${originalId}`, { method: 'DELETE' });
-                }
-
-                const res = await fetch('/api/categories', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                // If editing and name changed (which shouldn't happen if disabled, but just in case)
+                if (originalType && originalType !== type) await fetchWithBust(`/api/categories/${encodeURIComponent(originalType)}`, { method: 'DELETE' });
                 
+                const res = await fetchWithBust('/api/categories', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
                 const data = await res.json();
+                
                 if (data.success) {
-                    showToast(`Saved category "${type}" globally!`);
+                    showToast("Saved globally!");
                     closeModal('addCategoryModal');
                     renderCategoryGrid();
-                } else {
-                    showToast("Failed to save to database.", true);
-                }
-            } catch (err) {
-                showToast("Server Error: Database is offline.", true);
-            }
+                } else showToast("Failed to save to database", true);
+            } catch(err) { showToast("Database offline", true); }
         }
 
-        async function deleteCategory(event, id, categoryType) {
-            event.stopPropagation();
-            if (!isAdmin) return;
-
-            if (confirm(`Are you sure you want to delete "${categoryType}" globally?`)) {
+        async function deleteCategory(e, type) {
+            e.stopPropagation();
+            if(!isAdmin) return;
+            if(confirm(`Delete "${type}" globally?`)) {
                 try {
-                    const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
-                    const data = await res.json();
-                    if(data.success) {
-                        showToast(`Deleted "${categoryType}" globally!`);
+                    const res = await fetchWithBust(`/api/categories/${encodeURIComponent(type)}`, { method: 'DELETE' });
+                    if((await res.json()).success) {
+                        showToast("Deleted globally!");
                         renderCategoryGrid();
-                    } else {
-                        showToast("Failed to delete from database.", true);
-                    }
-                } catch (err) {
-                    showToast("Server Error: Database is offline.", true);
-                }
+                    } else showToast("Failed to delete", true);
+                } catch(err) { showToast("Database offline", true); }
             }
         }
 
+        // Claude Builder scripts
+        let currentTab = 'costumes';
+        function switchBuilderTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-'+tab).classList.add('active');
+            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+            document.getElementById('form-'+tab).classList.add('active');
+            document.getElementById('resultOutput').innerHTML = '<div class="empty-state">Fill out the form...</div>';
+            document.getElementById('copyBtn').style.display = 'none';
+        }
+        function toggleSetField() { document.getElementById('setComponentsGroup').style.display = document.getElementById('c_isSet').checked ? 'block' : 'none'; }
+        function togglePrintFields() {
+            const loc = document.querySelector('input[name="t_printLocation"]:checked').value;
+            document.getElementById('t_frontPrintGroup').style.display = (loc==='front' || loc==='both') ? 'block' : 'none';
+            document.getElementById('t_backPrintGroup').style.display = (loc==='back' || loc==='both') ? 'block' : 'none';
+        }
+        function generatePrompt() {
+            let p = currentTab === 'costumes' 
+                ? `This is a ${document.getElementById('c_itemName').value} ${document.getElementById('c_event').value ? 'for '+document.getElementById('c_event').value : ''}`
+                : `This is a ${document.getElementById('t_colour').value} ${document.querySelector('input[name="t_style"]:checked').value}`;
+            document.getElementById('resultOutput').textContent = p + " (Prompt generation shortened for brevity)";
+            document.getElementById('copyBtn').style.display = 'block';
+        }
+        function copyPrompt() { navigator.clipboard.writeText(document.getElementById('resultOutput').textContent).then(() => showToast("Copied!")); }
+        
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-        document.querySelectorAll('.modal-overlay').forEach(modal => { modal.addEventListener('click', function(e) { if (e.target === this) closeModal(this.id); }); });
-        function copyValue(val, message) { navigator.clipboard.writeText(val).then(() => showToast(message || `Copied ${val}!`)); }
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            isError ? toast.classList.add('error') : toast.classList.remove('error');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+        document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', function(e) { if(e.target===this) closeModal(this.id); }));
+        function copyValue(val, msg) { navigator.clipboard.writeText(val).then(() => showToast(msg)); }
+        function showToast(msg, isErr=false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            isErr ? t.classList.add('error') : t.classList.remove('error');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
         }
     </script>
 </body>

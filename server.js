@@ -7,11 +7,16 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Connect to Neon Postgres Database
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
+// Connect to Postgres Database
+let pool;
+if (process.env.DATABASE_URL) {
+    pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+    });
+} else {
+    console.error("CRITICAL ERROR: DATABASE_URL environment variable is missing!");
+}
 
 // Middleware
 app.use(express.json());
@@ -27,10 +32,7 @@ app.use(session({
 
 // Initialize Database Tables
 async function initDb() {
-    if (!process.env.DATABASE_URL) {
-        console.warn("WARNING: No DATABASE_URL found. Database will not connect.");
-        return;
-    }
+    if (!pool) return;
     try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS hex_codes (
@@ -52,10 +54,11 @@ async function initDb() {
                 therange VARCHAR(100),
                 tesco VARCHAR(100),
                 bnq VARCHAR(100),
+                is_deleted BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('Neon database initialized successfully!');
+        console.log('Database connected and initialized successfully!');
     } catch (err) {
         console.error('Error initializing database:', err);
     }
@@ -66,15 +69,17 @@ initDb();
    HEX CODES API ENDPOINTS
 --------------------------------------------------- */
 app.get('/api/hexes', async (req, res) => {
+    if (!pool) return res.status(500).json({ success: false, message: 'No DB Connection' });
     try {
         const result = await pool.query('SELECT hex_code FROM hex_codes WHERE is_deleted = FALSE ORDER BY created_at ASC');
         res.json({ success: true, hexes: result.rows.map(r => r.hex_code) });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Failed to fetch hexes' });
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
 app.post('/api/hexes', async (req, res) => {
+    if (!pool) return res.status(500).json({ success: false, message: 'No DB Connection' });
     const { hexCode } = req.body;
     try {
         await pool.query(
@@ -83,7 +88,7 @@ app.post('/api/hexes', async (req, res) => {
         );
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ success: false });
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
@@ -102,33 +107,39 @@ app.delete('/api/hexes/:hex', async (req, res) => {
    CATEGORIES API ENDPOINTS
 --------------------------------------------------- */
 app.get('/api/categories', async (req, res) => {
+    if (!pool) return res.status(500).json({ success: false, message: 'No DB Connection' });
     try {
-        const result = await pool.query('SELECT * FROM categories ORDER BY created_at ASC');
+        const result = await pool.query('SELECT * FROM categories WHERE is_deleted = FALSE ORDER BY created_at ASC');
         res.json({ success: true, categories: result.rows });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Database query failed' });
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
 app.post('/api/categories', async (req, res) => {
+    if (!pool) return res.status(500).json({ success: false, message: 'No DB Connection' });
     const { product_type, amazon, ebay, shein, debenhams, therange, tesco, bnq } = req.body;
     try {
         await pool.query(`
-            INSERT INTO categories (product_type, amazon, ebay, shein, debenhams, therange, tesco, bnq)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO categories (product_type, amazon, ebay, shein, debenhams, therange, tesco, bnq, is_deleted)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, FALSE)
             ON CONFLICT (product_type) DO UPDATE SET
-            amazon = $2, ebay = $3, shein = $4, debenhams = $5, therange = $6, tesco = $7, bnq = $8
+            amazon = $2, ebay = $3, shein = $4, debenhams = $5, therange = $6, tesco = $7, bnq = $8, is_deleted = FALSE
         `, [product_type, amazon, ebay, shein, debenhams, therange, tesco, bnq]);
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ success: false });
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
-app.delete('/api/categories/:id', async (req, res) => {
+app.delete('/api/categories/:productType', async (req, res) => {
     if (!req.session || !req.session.isAdmin) return res.status(403).json({ success: false });
     try {
-        await pool.query('DELETE FROM categories WHERE id = $1', [req.params.id]);
+        // We use UPDATE is_deleted = TRUE so it hides defaults properly as well
+        await pool.query(`
+            INSERT INTO categories (product_type, is_deleted) VALUES ($1, TRUE)
+            ON CONFLICT (product_type) DO UPDATE SET is_deleted = TRUE
+        `, [req.params.productType]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ success: false });
