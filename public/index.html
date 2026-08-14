@@ -567,7 +567,7 @@
             margin-bottom: 1rem;
             border-bottom: 1px solid var(--glass-border);
             padding-bottom: 0.75rem;
-            padding-right: 90px; /* Space for the 3 admin buttons */
+            padding-right: 90px;
         }
 
         .category-title {
@@ -742,7 +742,7 @@
     </div>
 
     <!-- MODAL: ADD/EDIT/DUPLICATE CATEGORY ID -->
-    <div id="addCategoryModal" class="modal-overlay" data-original-type="">
+    <div id="addCategoryModal" class="modal-overlay" data-original-id="" data-original-type="">
         <div class="modal-content">
             <h2 id="categoryModalTitle">Add Product Category</h2>
             <div class="form-group" style="text-align: left;">
@@ -977,6 +977,7 @@
     <!-- MAIN SCRIPT -->
     <script>
         let isAdmin = false;
+        let categoriesData = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             checkAdminStatus();
@@ -1309,80 +1310,76 @@
 
 
         /* ---------------------------------------------------
-           CATEGORY ID FINDER LOGIC & DATA
+           CATEGORY ID FINDER LOGIC & SERVER SYNC
         --------------------------------------------------- */
-        
+
         const defaultCategories = [
             {
-                type: "Costumes & Fancy Dress",
-                channels: {
-                    amazon: "2409725031",
-                    ebay: "11450",
-                    shein: "1732",
-                    debenhams: "DEB-408",
-                    therange: "TR-8820",
-                    tesco: "TSC-901",
-                    bnq: "BQ-7731"
-                }
+                product_type: "Costumes & Fancy Dress",
+                amazon: "2409725031", ebay: "11450", shein: "1732", debenhams: "DEB-408", therange: "TR-8820", tesco: "TSC-901", bnq: "BQ-7731"
             },
             {
-                type: "T-Shirts & Tops",
-                channels: {
-                    amazon: "1040662",
-                    ebay: "15687",
-                    shein: "1821",
-                    debenhams: "DEB-102",
-                    therange: "TR-1044",
-                    tesco: "TSC-110",
-                    bnq: "BQ-0012"
-                }
+                product_type: "T-Shirts & Tops",
+                amazon: "1040662", ebay: "15687", shein: "1821", debenhams: "DEB-102", therange: "TR-1044", tesco: "TSC-110", bnq: "BQ-0012"
             }
         ];
 
-        let customCategories = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
-        let deletedCategories = JSON.parse(localStorage.getItem('userDeletedCategories')) || [];
-
-        function renderCategoryGrid(force = false) {
+        async function renderCategoryGrid(force = false) {
             const container = document.getElementById('category-container');
             if(!container) return;
-            if (!force && container.innerHTML !== '') return;
+
+            // Fetch latest category list from server/database
+            try {
+                const res = await fetch('/api/categories');
+                const data = await res.json();
+                
+                if (data.success && data.categories && data.categories.length > 0) {
+                    categoriesData = data.categories;
+                } else {
+                    // Fall back to defaults or local cache if DB empty
+                    let customLocal = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
+                    categoriesData = customLocal.length > 0 ? customLocal : defaultCategories;
+                }
+            } catch (err) {
+                // Network/Offline fallback
+                let customLocal = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
+                categoriesData = customLocal.length > 0 ? customLocal : defaultCategories;
+            }
 
             container.innerHTML = '';
             let html = '';
 
-            let allCats = defaultCategories
-                .filter(cat => !deletedCategories.includes(cat.type))
-                .filter(cat => !customCategories.some(c => c.type === cat.type)) 
-                .concat(customCategories);
-
-            if(allCats.length === 0) {
+            if(categoriesData.length === 0) {
                 container.innerHTML = `<div class="empty-state" style="padding: 3rem;">No category IDs found. ${isAdmin ? 'Click "+ Add Product Category" to add one!' : ''}</div>`;
                 return;
             }
 
-            allCats.forEach(cat => {
+            categoriesData.forEach(cat => {
+                const typeName = cat.product_type || cat.type;
+                const catId = cat.id || '';
+                
                 let adminActions = isAdmin ? `
                     <div class="admin-actions">
-                        <button class="duplicate-btn" onclick="duplicateCategory(event, '${cat.type}')" title="Duplicate Category">⧉</button>
-                        <button class="edit-btn" onclick="editCategory(event, '${cat.type}')" title="Edit Category">✎</button>
-                        <button class="delete-hex-btn" onclick="deleteCategory(event, '${cat.type}')" title="Delete Category">✕</button>
+                        <button class="duplicate-btn" onclick="duplicateCategory(event, '${catId}', '${typeName}')" title="Duplicate Category">⧉</button>
+                        <button class="edit-btn" onclick="editCategory(event, '${catId}', '${typeName}')" title="Edit Category">✎</button>
+                        <button class="delete-hex-btn" onclick="deleteCategory(event, '${catId}', '${typeName}')" title="Delete Category">✕</button>
                     </div>
                 ` : '';
                 
                 html += `
-                    <div class="category-card" data-title="${cat.type}">
+                    <div class="category-card" data-title="${typeName}">
                         ${adminActions}
                         <div class="category-card-header">
-                            <div class="category-title">${cat.type}</div>
+                            <div class="category-title">${typeName}</div>
                         </div>
                         <div class="channels-grid">
-                            ${generateChannelItemHTML("Amazon", cat.channels.amazon)}
-                            ${generateChannelItemHTML("eBay", cat.channels.ebay)}
-                            ${generateChannelItemHTML("Shein", cat.channels.shein)}
-                            ${generateChannelItemHTML("Debenhams", cat.channels.debenhams)}
-                            ${generateChannelItemHTML("The Range", cat.channels.therange)}
-                            ${generateChannelItemHTML("Tesco", cat.channels.tesco)}
-                            ${generateChannelItemHTML("B&Q", cat.channels.bnq)}
+                            ${generateChannelItemHTML("Amazon", cat.amazon || (cat.channels && cat.channels.amazon))}
+                            ${generateChannelItemHTML("eBay", cat.ebay || (cat.channels && cat.channels.ebay))}
+                            ${generateChannelItemHTML("Shein", cat.shein || (cat.channels && cat.channels.shein))}
+                            ${generateChannelItemHTML("Debenhams", cat.debenhams || (cat.channels && cat.channels.debenhams))}
+                            ${generateChannelItemHTML("The Range", cat.therange || (cat.channels && cat.channels.therange))}
+                            ${generateChannelItemHTML("Tesco", cat.tesco || (cat.channels && cat.channels.tesco))}
+                            ${generateChannelItemHTML("B&Q", cat.bnq || (cat.channels && cat.channels.bnq))}
                         </div>
                     </div>
                 `;
@@ -1403,6 +1400,7 @@
             `;
         }
 
+        /* --- ADVANCED CATEGORY SEARCH LOGIC --- */
         function filterCategoryGrid() {
             const inputEl = document.getElementById('searchCatInput');
             if(!inputEl) return;
@@ -1440,9 +1438,9 @@
 
         function openAddCategoryModal() {
             document.getElementById('addCategoryModal').removeAttribute('data-original-type');
+            document.getElementById('addCategoryModal').removeAttribute('data-original-id');
             document.getElementById('categoryModalTitle').textContent = "Add Product Category";
             document.getElementById('cat_productType').value = '';
-            document.getElementById('cat_productType').disabled = false;
             document.getElementById('cat_amazon').value = '';
             document.getElementById('cat_ebay').value = '';
             document.getElementById('cat_shein').value = '';
@@ -1453,122 +1451,126 @@
             openModal('addCategoryModal');
         }
 
-        function editCategory(event, type) {
+        function editCategory(event, id, type) {
             event.stopPropagation();
             if (!isAdmin) return;
 
-            let cat = customCategories.find(c => c.type === type) || defaultCategories.find(c => c.type === type);
+            let cat = categoriesData.find(c => (c.id && String(c.id) === String(id)) || (c.product_type || c.type) === type);
             if (!cat) return;
 
-            document.getElementById('addCategoryModal').setAttribute('data-original-type', cat.type);
+            const modal = document.getElementById('addCategoryModal');
+            modal.setAttribute('data-original-id', cat.id || '');
+            modal.setAttribute('data-original-type', cat.product_type || cat.type);
+            
             document.getElementById('categoryModalTitle').textContent = "Edit Product Category";
+            document.getElementById('cat_productType').value = cat.product_type || cat.type;
             
-            document.getElementById('cat_productType').value = cat.type;
-            document.getElementById('cat_productType').disabled = false;
-            
-            document.getElementById('cat_amazon').value = cat.channels.amazon || '';
-            document.getElementById('cat_ebay').value = cat.channels.ebay || '';
-            document.getElementById('cat_shein').value = cat.channels.shein || '';
-            document.getElementById('cat_debenhams').value = cat.channels.debenhams || '';
-            document.getElementById('cat_therange').value = cat.channels.therange || '';
-            document.getElementById('cat_tesco').value = cat.channels.tesco || '';
-            document.getElementById('cat_bnq').value = cat.channels.bnq || '';
+            const channels = cat.channels || cat;
+            document.getElementById('cat_amazon').value = channels.amazon || '';
+            document.getElementById('cat_ebay').value = channels.ebay || '';
+            document.getElementById('cat_shein').value = channels.shein || '';
+            document.getElementById('cat_debenhams').value = channels.debenhams || '';
+            document.getElementById('cat_therange').value = channels.therange || '';
+            document.getElementById('cat_tesco').value = channels.tesco || '';
+            document.getElementById('cat_bnq').value = channels.bnq || '';
 
             openModal('addCategoryModal');
         }
 
-        function duplicateCategory(event, type) {
+        function duplicateCategory(event, id, type) {
             event.stopPropagation();
             if (!isAdmin) return;
 
-            let cat = customCategories.find(c => c.type === type) || defaultCategories.find(c => c.type === type);
+            let cat = categoriesData.find(c => (c.id && String(c.id) === String(id)) || (c.product_type || c.type) === type);
             if (!cat) return;
 
-            document.getElementById('addCategoryModal').removeAttribute('data-original-type');
+            const modal = document.getElementById('addCategoryModal');
+            modal.removeAttribute('data-original-id');
+            modal.removeAttribute('data-original-type');
+            
             document.getElementById('categoryModalTitle').textContent = "Duplicate Product Category";
+            document.getElementById('cat_productType').value = (cat.product_type || cat.type) + " (Copy)";
             
-            // Append (Copy) so it's a new unique name
-            document.getElementById('cat_productType').value = cat.type + " (Copy)";
-            document.getElementById('cat_productType').disabled = false;
-            
-            document.getElementById('cat_amazon').value = cat.channels.amazon || '';
-            document.getElementById('cat_ebay').value = cat.channels.ebay || '';
-            document.getElementById('cat_shein').value = cat.channels.shein || '';
-            document.getElementById('cat_debenhams').value = cat.channels.debenhams || '';
-            document.getElementById('cat_therange').value = cat.channels.therange || '';
-            document.getElementById('cat_tesco').value = cat.channels.tesco || '';
-            document.getElementById('cat_bnq').value = cat.channels.bnq || '';
+            const channels = cat.channels || cat;
+            document.getElementById('cat_amazon').value = channels.amazon || '';
+            document.getElementById('cat_ebay').value = channels.ebay || '';
+            document.getElementById('cat_shein').value = channels.shein || '';
+            document.getElementById('cat_debenhams').value = channels.debenhams || '';
+            document.getElementById('cat_therange').value = channels.therange || '';
+            document.getElementById('cat_tesco').value = channels.tesco || '';
+            document.getElementById('cat_bnq').value = channels.bnq || '';
 
             openModal('addCategoryModal');
         }
 
-        function saveCategoryItem() {
+        async function saveCategoryItem() {
             const type = document.getElementById('cat_productType').value.trim();
             if(!type) {
                 showToast("Please enter a Product Type name", true);
                 return;
             }
 
-            const newCategory = {
-                type: type,
-                channels: {
-                    amazon: document.getElementById('cat_amazon').value.trim(),
-                    ebay: document.getElementById('cat_ebay').value.trim(),
-                    shein: document.getElementById('cat_shein').value.trim(),
-                    debenhams: document.getElementById('cat_debenhams').value.trim(),
-                    therange: document.getElementById('cat_therange').value.trim(),
-                    tesco: document.getElementById('cat_tesco').value.trim(),
-                    bnq: document.getElementById('cat_bnq').value.trim()
-                }
+            const payload = {
+                product_type: type,
+                amazon: document.getElementById('cat_amazon').value.trim(),
+                ebay: document.getElementById('cat_ebay').value.trim(),
+                shein: document.getElementById('cat_shein').value.trim(),
+                debenhams: document.getElementById('cat_debenhams').value.trim(),
+                therange: document.getElementById('cat_therange').value.trim(),
+                tesco: document.getElementById('cat_tesco').value.trim(),
+                bnq: document.getElementById('cat_bnq').value.trim()
             };
 
-            const originalType = document.getElementById('addCategoryModal').getAttribute('data-original-type');
-
-            if (originalType && originalType !== type) {
-                customCategories = customCategories.filter(c => c.type !== originalType);
+            try {
+                // Save to Server API / Database
+                const res = await fetch('/api/categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
                 
-                if (defaultCategories.some(c => c.type === originalType)) {
-                    if (!deletedCategories.includes(originalType)) {
-                        deletedCategories.push(originalType);
-                        localStorage.setItem('userDeletedCategories', JSON.stringify(deletedCategories));
-                    }
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Saved category "${type}" globally!`);
+                } else {
+                    showToast("Saved locally (Server sync offline)", true);
                 }
+            } catch (err) {
+                // Backup to LocalStorage if offline
+                let customLocal = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
+                const existingIdx = customLocal.findIndex(c => (c.product_type || c.type) === type);
+                if (existingIdx >= 0) customLocal[existingIdx] = payload;
+                else customLocal.push(payload);
+                localStorage.setItem('userCustomCategories', JSON.stringify(customLocal));
+                showToast(`Saved category "${type}"!`);
             }
 
-            const existingIndex = customCategories.findIndex(c => c.type === type);
-            if (existingIndex >= 0) {
-                customCategories[existingIndex] = newCategory;
-            } else {
-                customCategories.push(newCategory);
-                deletedCategories = deletedCategories.filter(c => c !== type);
-                localStorage.setItem('userDeletedCategories', JSON.stringify(deletedCategories));
-            }
-
-            localStorage.setItem('userCustomCategories', JSON.stringify(customCategories));
-            
-            showToast(`Saved category "${type}"!`);
             closeModal('addCategoryModal');
             renderCategoryGrid(true);
         }
 
-        function deleteCategory(event, categoryType) {
+        async function deleteCategory(event, id, categoryType) {
             event.stopPropagation();
             if (!isAdmin) return;
 
             if (confirm(`Are you sure you want to delete the category "${categoryType}"?`)) {
-                if (customCategories.some(c => c.type === categoryType)) {
-                    customCategories = customCategories.filter(c => c.type !== categoryType);
-                    localStorage.setItem('userCustomCategories', JSON.stringify(customCategories));
-                } else {
-                    deletedCategories.push(categoryType);
-                    localStorage.setItem('userDeletedCategories', JSON.stringify(deletedCategories));
+                try {
+                    if (id) {
+                        await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+                    } else {
+                        // Fallback API / local removal
+                        let customLocal = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
+                        customLocal = customLocal.filter(c => (c.product_type || c.type) !== categoryType);
+                        localStorage.setItem('userCustomCategories', JSON.stringify(customLocal));
+                    }
+                    showToast(`Deleted category "${categoryType}"`);
+                } catch (err) {
+                    showToast(`Deleted category "${categoryType}"`);
                 }
 
-                showToast(`Deleted category "${categoryType}"`);
                 renderCategoryGrid(true);
             }
         }
-
 
         /* --- MODAL LOGIC & CUSTOM HEX ADDITION --- */
         function openModal(id) {
