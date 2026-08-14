@@ -1328,35 +1328,63 @@
             const container = document.getElementById('category-container');
             if(!container) return;
 
-            // Fetch latest category list from server/database
+            let serverCategories = [];
+
             try {
                 const res = await fetch('/api/categories');
                 const data = await res.json();
                 
-                if (data.success && data.categories && data.categories.length > 0) {
-                    categoriesData = data.categories;
-                } else {
-                    // Fall back to defaults or local cache if DB empty
-                    let customLocal = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
-                    categoriesData = customLocal.length > 0 ? customLocal : defaultCategories;
+                if (data.success && data.categories) {
+                    serverCategories = data.categories.map(dbCat => ({
+                        id: dbCat.id,
+                        type: dbCat.product_type,
+                        channels: {
+                            amazon: dbCat.amazon,
+                            ebay: dbCat.ebay,
+                            shein: dbCat.shein,
+                            debenhams: dbCat.debenhams,
+                            therange: dbCat.therange,
+                            tesco: dbCat.tesco,
+                            bnq: dbCat.bnq
+                        }
+                    }));
                 }
             } catch (err) {
-                // Network/Offline fallback
-                let customLocal = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
-                categoriesData = customLocal.length > 0 ? customLocal : defaultCategories;
+                console.log("Offline or server unavailable, using local backups");
             }
+
+            let serverCategoryNames = serverCategories.map(c => c.type.toLowerCase());
+            let localDeleted = JSON.parse(localStorage.getItem('userDeletedCategories')) || [];
+            let localCustoms = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
+
+            // Combine defaults with server data
+            let allCats = defaultCategories
+                .filter(cat => !localDeleted.includes(cat.product_type))
+                .filter(cat => !serverCategoryNames.includes(cat.product_type.toLowerCase())) 
+                .concat(serverCategories);
+
+            // True offline fallback
+            if (serverCategories.length === 0 && localCustoms.length > 0) {
+                allCats = defaultCategories
+                    .filter(cat => !localDeleted.includes(cat.product_type))
+                    .filter(cat => !localCustoms.some(c => c.product_type === cat.product_type || c.type === cat.product_type)) 
+                    .concat(localCustoms);
+            }
+
+            categoriesData = allCats; // Global sync for edits
 
             container.innerHTML = '';
             let html = '';
 
-            if(categoriesData.length === 0) {
+            if(allCats.length === 0) {
                 container.innerHTML = `<div class="empty-state" style="padding: 3rem;">No category IDs found. ${isAdmin ? 'Click "+ Add Product Category" to add one!' : ''}</div>`;
                 return;
             }
 
-            categoriesData.forEach(cat => {
+            allCats.forEach(cat => {
                 const typeName = cat.product_type || cat.type;
                 const catId = cat.id || '';
+                const channels = cat.channels || cat;
                 
                 let adminActions = isAdmin ? `
                     <div class="admin-actions">
@@ -1373,13 +1401,13 @@
                             <div class="category-title">${typeName}</div>
                         </div>
                         <div class="channels-grid">
-                            ${generateChannelItemHTML("Amazon", cat.amazon || (cat.channels && cat.channels.amazon))}
-                            ${generateChannelItemHTML("eBay", cat.ebay || (cat.channels && cat.channels.ebay))}
-                            ${generateChannelItemHTML("Shein", cat.shein || (cat.channels && cat.channels.shein))}
-                            ${generateChannelItemHTML("Debenhams", cat.debenhams || (cat.channels && cat.channels.debenhams))}
-                            ${generateChannelItemHTML("The Range", cat.therange || (cat.channels && cat.channels.therange))}
-                            ${generateChannelItemHTML("Tesco", cat.tesco || (cat.channels && cat.channels.tesco))}
-                            ${generateChannelItemHTML("B&Q", cat.bnq || (cat.channels && cat.channels.bnq))}
+                            ${generateChannelItemHTML("Amazon", channels.amazon)}
+                            ${generateChannelItemHTML("eBay", channels.ebay)}
+                            ${generateChannelItemHTML("Shein", channels.shein)}
+                            ${generateChannelItemHTML("Debenhams", channels.debenhams)}
+                            ${generateChannelItemHTML("The Range", channels.therange)}
+                            ${generateChannelItemHTML("Tesco", channels.tesco)}
+                            ${generateChannelItemHTML("B&Q", channels.bnq)}
                         </div>
                     </div>
                 `;
@@ -1521,8 +1549,10 @@
                 bnq: document.getElementById('cat_bnq').value.trim()
             };
 
+            const originalType = document.getElementById('addCategoryModal').getAttribute('data-original-type');
+            const originalId = document.getElementById('addCategoryModal').getAttribute('data-original-id');
+
             try {
-                // Save to Server API / Database
                 const res = await fetch('/api/categories', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1532,17 +1562,25 @@
                 const data = await res.json();
                 if (data.success) {
                     showToast(`Saved category "${type}" globally!`);
+                    
+                    if (originalType && originalType !== type && originalId) {
+                        await fetch(`/api/categories/${originalId}`, { method: 'DELETE' });
+                    }
                 } else {
-                    showToast("Saved locally (Server sync offline)", true);
+                    showToast("Failed to sync to server", true);
                 }
             } catch (err) {
-                // Backup to LocalStorage if offline
-                let customLocal = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
-                const existingIdx = customLocal.findIndex(c => (c.product_type || c.type) === type);
-                if (existingIdx >= 0) customLocal[existingIdx] = payload;
-                else customLocal.push(payload);
-                localStorage.setItem('userCustomCategories', JSON.stringify(customLocal));
-                showToast(`Saved category "${type}"!`);
+                // Offline LocalStorage fallback
+                let localCustoms = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
+                const existingIndex = localCustoms.findIndex(c => (c.product_type || c.type) === type);
+                
+                if (existingIndex >= 0) {
+                    localCustoms[existingIndex] = payload;
+                } else {
+                    localCustoms.push(payload);
+                }
+                localStorage.setItem('userCustomCategories', JSON.stringify(localCustoms));
+                showToast(`Saved locally (Offline Mode)`);
             }
 
             closeModal('addCategoryModal');
@@ -1553,19 +1591,21 @@
             event.stopPropagation();
             if (!isAdmin) return;
 
-            if (confirm(`Are you sure you want to delete the category "${categoryType}"?`)) {
+            if (confirm(`Are you sure you want to delete "${categoryType}" globally?`)) {
                 try {
-                    if (id) {
-                        await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+                    if (id && id !== 'undefined' && id !== '') {
+                        const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+                        const data = await res.json();
+                        if(data.success) showToast(`Deleted "${categoryType}" globally!`);
                     } else {
-                        // Fallback API / local removal
-                        let customLocal = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
-                        customLocal = customLocal.filter(c => (c.product_type || c.type) !== categoryType);
-                        localStorage.setItem('userCustomCategories', JSON.stringify(customLocal));
+                        // Deleting an offline or default category
+                        let localDeleted = JSON.parse(localStorage.getItem('userDeletedCategories')) || [];
+                        localDeleted.push(categoryType);
+                        localStorage.setItem('userDeletedCategories', JSON.stringify(localDeleted));
+                        showToast(`Removed "${categoryType}"`);
                     }
-                    showToast(`Deleted category "${categoryType}"`);
                 } catch (err) {
-                    showToast(`Deleted category "${categoryType}"`);
+                    showToast("Error deleting from server", true);
                 }
 
                 renderCategoryGrid(true);
