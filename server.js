@@ -59,13 +59,14 @@ async function initDb() {
             );
         `);
 
-        // FORCE FIX: If the table was made in an older version, this forces it to add the missing column
+        // FORCE FIX: Ensure the is_deleted column exists for older database instances
         try {
             await pool.query('ALTER TABLE categories ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;');
-            console.log("Added missing is_deleted column to categories table.");
-        } catch (e) {
-            // Column already exists, safe to ignore
-        }
+        } catch (e) { /* Ignore, column already exists */ }
+        
+        try {
+            await pool.query('ALTER TABLE hex_codes ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;');
+        } catch (e) { /* Ignore, column already exists */ }
 
         console.log('Database connected and initialized successfully!');
     } catch (err) {
@@ -80,8 +81,9 @@ initDb();
 app.get('/api/hexes', async (req, res) => {
     if (!pool) return res.status(500).json({ success: false, message: 'No DB Connection' });
     try {
-        const result = await pool.query('SELECT hex_code FROM hex_codes WHERE is_deleted = FALSE ORDER BY created_at ASC');
-        res.json({ success: true, hexes: result.rows.map(r => r.hex_code) });
+        // Return ALL hexes so the frontend knows which defaults are deleted
+        const result = await pool.query('SELECT hex_code, is_deleted FROM hex_codes');
+        res.json({ success: true, hexes: result.rows });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -101,14 +103,18 @@ app.post('/api/hexes', async (req, res) => {
     }
 });
 
-app.delete('/api/hexes/:hex', async (req, res) => {
+// Changed to POST to avoid URL string formatting errors
+app.post('/api/hexes/delete', async (req, res) => {
     if (!req.session || !req.session.isAdmin) return res.status(403).json({ success: false });
-    const formattedHex = '#' + req.params.hex.toUpperCase();
+    const formattedHex = req.body.hex_code.toUpperCase();
     try {
-        await pool.query('UPDATE hex_codes SET is_deleted = TRUE WHERE hex_code = $1', [formattedHex]);
+        await pool.query(`
+            INSERT INTO hex_codes (hex_code, is_deleted) VALUES ($1, TRUE)
+            ON CONFLICT (hex_code) DO UPDATE SET is_deleted = TRUE
+        `, [formattedHex]);
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ success: false });
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
@@ -118,10 +124,10 @@ app.delete('/api/hexes/:hex', async (req, res) => {
 app.get('/api/categories', async (req, res) => {
     if (!pool) return res.status(500).json({ success: false, message: 'No DB Connection' });
     try {
-        const result = await pool.query('SELECT * FROM categories WHERE is_deleted = FALSE ORDER BY created_at ASC');
+        // Return ALL categories so frontend can filter
+        const result = await pool.query('SELECT * FROM categories ORDER BY created_at ASC');
         res.json({ success: true, categories: result.rows });
     } catch (err) {
-        console.error("Fetch categories error:", err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
@@ -142,16 +148,17 @@ app.post('/api/categories', async (req, res) => {
     }
 });
 
-app.delete('/api/categories/:productType', async (req, res) => {
+// Changed to POST to prevent slashes/ampersands in names breaking the URL route
+app.post('/api/categories/delete', async (req, res) => {
     if (!req.session || !req.session.isAdmin) return res.status(403).json({ success: false });
     try {
         await pool.query(`
             INSERT INTO categories (product_type, is_deleted) VALUES ($1, TRUE)
             ON CONFLICT (product_type) DO UPDATE SET is_deleted = TRUE
-        `, [req.params.productType]);
+        `, [req.body.product_type]);
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ success: false });
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 

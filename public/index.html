@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listing Tools | Suite</title>
-    <!-- Force browser to ignore cache -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -13,8 +12,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
         body { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #172554); background-size: 400% 400%; animation: gradientBG 15s ease infinite; color: var(--text-main); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-        /* Top Navigation */
+        
         .top-nav { width: 100%; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border); padding: 1rem 2rem; display: flex; justify-content: center; position: sticky; top: 0; z-index: 100; }
         .nav-container { max-width: 1200px; width: 100%; display: flex; align-items: center; justify-content: space-between; }
         .nav-logo { font-size: 1.25rem; font-weight: 800; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -25,7 +23,6 @@
         .admin-nav-btn { border: 1px solid rgba(244, 63, 94, 0.4); color: #f43f5e; }
         .admin-nav-btn:hover { background: rgba(244, 63, 94, 0.2); color: white; }
 
-        /* Main Content Container */
         .main-content { width: 100%; max-width: 1200px; padding: 2rem; flex: 1; }
         .tool-view { display: none; animation: fadeIn 0.4s ease-out; }
         .tool-view.active { display: block; }
@@ -33,7 +30,6 @@
         .header h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
         .header p { color: var(--text-muted); font-size: 1.1rem; }
 
-        /* Forms & Inputs */
         .form-group { margin-bottom: 1.5rem; }
         label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         input[type="text"], input[type="password"], textarea { width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-main); font-size: 1rem; transition: all 0.3s ease; }
@@ -50,10 +46,9 @@
         .panel-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
         .panel-title::before { content: ''; display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--accent-gradient); }
 
-        /* Claude Builder */
         .tabs-container { display: flex; gap: 1rem; margin-bottom: 1.5rem; width: 100%; }
         .tab-btn { flex: 1; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); color: var(--text-muted); padding: 1rem; border-radius: 12px; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
-        .tab-btn.active { background: var(--glass-highlight); color: var(--text-main); border-color: #8b5cf6; }
+        .tab-btn.active { background: var(--glass-highlight); color: var(--text-main); border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
         .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
         @media (min-width: 900px) { .layout-grid { grid-template-columns: 1fr 1fr; } }
         .form-section { display: none; }
@@ -72,13 +67,12 @@
         .result-box { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 1.5rem; border-radius: 12px; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; color: #e2e8f0; font-size: 0.95rem; line-height: 1.8; height: calc(100% - 140px); overflow-y: auto; margin-bottom: 1.5rem; }
         .empty-state { display: flex; height: 100%; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-style: italic; }
         .copy-btn { background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); color: white; border: 1px solid var(--glass-border); padding: 1rem 1.5rem; font-size: 1rem; font-weight: 600; border-radius: 12px; cursor: pointer; width: 100%; display: none; }
+        .copy-btn:hover { background: var(--glass-highlight); }
 
-        /* Tools Header UI */
         .add-hex-panel { display: flex; gap: 1rem; justify-content: center; align-items: center; margin-bottom: 2rem; max-width: 1000px; width: 100%; margin-left: auto; margin-right: auto; }
         .search-input { flex: 1; background: rgba(0,0,0,0.3) !important; border-radius: 12px !important; padding: 0.85rem 1.25rem !important; }
-        .add-btn { width: 45px !important; height: 45px !important; border-radius: 50% !important; font-size: 1.5rem !important; display: flex; align-items: center; justify-content: center; padding: 0 !important; margin-top: 0 !important; box-shadow: 0 4px 15px rgba(139,92,246,0.4); flex-shrink: 0; line-height: 1; }
+        .add-btn { width: 45px !important; height: 45px !important; border-radius: 50% !important; font-size: 1.5rem !important; display: flex; align-items: center; justify-content: center; padding: 0 !important; margin-top: 0 !important; box-shadow: 0 4px 15px rgba(139,92,246,0.4); flex-shrink: 0; }
 
-        /* Hex Grid */
         .hex-category { margin-bottom: 3rem; }
         .hex-category h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; color: var(--text-main); }
         .hex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; }
@@ -87,7 +81,16 @@
         .hex-swatch { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; margin-bottom: 0.75rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.1); }
         .hex-label { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 600; }
 
-        /* Category Grid */
+        .admin-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 0.5rem; }
+        .duplicate-btn, .edit-btn, .delete-btn { color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: all 0.2s; }
+        .duplicate-btn { background: rgba(16, 185, 129, 0.8); }
+        .duplicate-btn:hover { background: #10b981; transform: scale(1.1); }
+        .edit-btn { background: rgba(59, 130, 246, 0.8); }
+        .edit-btn:hover { background: #3b82f6; transform: scale(1.1); }
+        .delete-btn { background: rgba(239, 68, 68, 0.8); font-size: 0.8rem; font-weight: bold; }
+        .delete-btn:hover { background: #ef4444; transform: scale(1.1); }
+        .hex-card .delete-btn { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; }
+
         .category-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; transition: all 0.2s ease; }
         .category-card:hover { background: var(--glass-highlight); }
         .category-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.75rem; padding-right: 90px; }
@@ -96,20 +99,9 @@
         .channel-item { background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; cursor: pointer; transition: all 0.2s ease; }
         .channel-item:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.15); transform: translateY(-2px); }
         .channel-name { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
-        .channel-id { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #60a5fa; font-size: 0.95rem; text-align: right; word-break: break-all; overflow-wrap: anywhere; }
+        .channel-id { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #60a5fa; font-size: 0.95rem; text-align: right; word-break: break-all; }
         .admin-add-cat-btn { background: var(--accent-gradient); color: white; border: none; padding: 0.85rem 1.5rem; font-weight: 700; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
 
-        /* Admin Buttons */
-        .admin-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 0.5rem; }
-        .duplicate-btn, .edit-btn { background: rgba(59, 130, 246, 0.8); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: all 0.2s; }
-        .duplicate-btn { background: rgba(16, 185, 129, 0.8); }
-        .duplicate-btn:hover { background: #10b981; transform: scale(1.1); }
-        .edit-btn:hover { background: #3b82f6; transform: scale(1.1); }
-        .delete-btn { background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: all 0.2s; }
-        .delete-btn:hover { background: #ef4444; transform: scale(1.1); }
-        .hex-card .delete-btn { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; }
-        
-        /* Modals & Toasts */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 2000; opacity: 0; transition: opacity 0.3s ease; }
         .modal-overlay.active { display: flex; opacity: 1; }
         .modal-content { background: rgba(30,41,59,0.95); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 2.5rem; width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; text-align: center; }
@@ -265,68 +257,11 @@
             checkAdminStatus();
         });
 
-        // Data Recovery: Extracts local items saved during DB downtime and pushes to live DB
-        async function migrateLocalDataToDb() {
-            const localCats = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
-            const localDeletedCats = JSON.parse(localStorage.getItem('userDeletedCategories')) || [];
-            const localHexes = JSON.parse(localStorage.getItem('userCustomHexes')) || [];
-            const localDeletedHexes = JSON.parse(localStorage.getItem('userDeletedHexes')) || [];
-            let migrated = false;
-
-            if (localCats.length > 0) {
-                for (let cat of localCats) {
-                    const payload = {
-                        product_type: cat.product_type || cat.type,
-                        amazon: cat.amazon || (cat.channels && cat.channels.amazon) || '',
-                        ebay: cat.ebay || (cat.channels && cat.channels.ebay) || '',
-                        shein: cat.shein || (cat.channels && cat.channels.shein) || '',
-                        debenhams: cat.debenhams || (cat.channels && cat.channels.debenhams) || '',
-                        therange: cat.therange || (cat.channels && cat.channels.therange) || '',
-                        tesco: cat.tesco || (cat.channels && cat.channels.tesco) || '',
-                        bnq: cat.bnq || (cat.channels && cat.channels.bnq) || ''
-                    };
-                    await fetch('/api/categories', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-                }
-                localStorage.removeItem('userCustomCategories');
-                migrated = true;
-            }
-
-            if (localDeletedCats.length > 0) {
-                for (let type of localDeletedCats) {
-                    await fetch(`/api/categories/${encodeURIComponent(type)}`, { method: 'DELETE' });
-                }
-                localStorage.removeItem('userDeletedCategories');
-                migrated = true;
-            }
-
-            if (localHexes.length > 0) {
-                for (let hex of localHexes) {
-                    await fetch('/api/hexes', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ hexCode: hex }) });
-                }
-                localStorage.removeItem('userCustomHexes');
-                migrated = true;
-            }
-
-            if (localDeletedHexes.length > 0) {
-                for (let hex of localDeletedHexes) {
-                    await fetch(`/api/hexes/${hex.replace('#','')}`, { method: 'DELETE' });
-                }
-                localStorage.removeItem('userDeletedHexes');
-                migrated = true;
-            }
-
-            if (migrated) {
-                showToast("Recovered trapped local data and synced to global database!");
-                renderCategoryGrid();
-                renderHexGrid();
-            }
-        }
-
-        // STRICT API FETCHING 
+        // Use cache-busting to bypass browser memory aggressively
         async function fetchWithBust(url, options = {}) {
             const separator = url.includes('?') ? '&' : '?';
             const bustedUrl = `${url}${separator}t=${Date.now()}`;
-            options.cache = 'no-store'; // Force browser to ignore local cache
+            options.cache = 'no-store';
             return fetch(bustedUrl, options);
         }
 
@@ -347,9 +282,6 @@
                 adminBtn.style.borderColor = '#10b981';
                 adminBtn.style.color = '#10b981';
                 if(addCatBtn) addCatBtn.style.display = 'block';
-                
-                // Automatically run the data recovery when logged in!
-                migrateLocalDataToDb(); 
             } else {
                 adminBtn.textContent = 'Admin Login';
                 adminBtn.style.borderColor = 'rgba(244, 63, 94, 0.4)';
@@ -383,8 +315,6 @@
                     isAdmin = true;
                     showToast("Admin access granted!");
                     closeModal('adminLoginModal');
-                    document.getElementById('adminUser').value = '';
-                    document.getElementById('adminPass').value = '';
                     updateAdminUI();
                 } else { showToast("Login failed", true); }
             } catch (e) { showToast("Error connecting to server", true); }
@@ -413,23 +343,27 @@
             const container = document.getElementById('hex-container');
             if(!container) return;
 
-            let dbHexes = [];
+            let allDbHexes = [];
             try {
                 const res = await fetchWithBust('/api/hexes');
                 const data = await res.json();
-                if(data.success) dbHexes = data.hexes;
+                if(data.success) allDbHexes = data.hexes;
             } catch (err) {}
+
+            const deletedDbHexes = allDbHexes.filter(h => h.is_deleted).map(h => h.hex_code.toUpperCase());
+            const activeDbHexes = allDbHexes.filter(h => !h.is_deleted).map(h => h.hex_code.toUpperCase());
 
             container.innerHTML = '';
             let html = '';
-            
             let allDefaultsFlat = [];
+            
             for (const [categoryName, colors] of Object.entries(defaultHexes)) {
-                allDefaultsFlat.push(...colors);
-                html += generateCategoryHTML(categoryName, colors);
+                let validColors = colors.filter(c => !deletedDbHexes.includes(c.toUpperCase()));
+                allDefaultsFlat.push(...validColors);
+                if (validColors.length > 0) html += generateCategoryHTML(categoryName, validColors);
             }
 
-            let trueCustoms = dbHexes.filter(h => !allDefaultsFlat.includes(h));
+            let trueCustoms = activeDbHexes.filter(h => !allDefaultsFlat.includes(h));
             if (trueCustoms.length > 0) html += generateCategoryHTML("Your Custom Colours", trueCustoms);
 
             container.innerHTML = html;
@@ -468,8 +402,15 @@
             if(!isAdmin) return;
             if(confirm(`Delete ${hex} globally?`)) {
                 try {
-                    await fetchWithBust(`/api/hexes/${hex.replace('#','')}`, { method: 'DELETE' });
-                    renderHexGrid();
+                    const res = await fetchWithBust('/api/hexes/delete', {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ hex_code: hex })
+                    });
+                    if((await res.json()).success) {
+                        showToast(`Deleted ${hex} globally!`);
+                        renderHexGrid();
+                    } else showToast("Failed to delete from DB", true);
                 } catch(err) { showToast("DB Error", true); }
             }
         }
@@ -492,13 +433,12 @@
             const container = document.getElementById('category-container');
             if(!container) return;
 
-            // 1. Fetch strictly from DB
-            let dbCategories = [];
+            let allDbCategories = [];
             try {
                 const res = await fetchWithBust('/api/categories');
                 const data = await res.json();
                 if(data.success) {
-                    dbCategories = data.categories;
+                    allDbCategories = data.categories;
                 } else {
                     throw new Error(data.message || "Database Query Failed");
                 }
@@ -507,12 +447,18 @@
                 return;
             }
 
-            // 2. Merge: DB Categories take absolute priority. If a default isn't in the DB, show it.
-            const dbNames = dbCategories.map(c => c.product_type.toLowerCase());
-            let finalCategories = [...dbCategories];
+            // Split into active and deleted
+            const activeDbCategories = allDbCategories.filter(c => !c.is_deleted);
+            const deletedDbNames = allDbCategories.filter(c => c.is_deleted).map(c => c.product_type.toLowerCase());
+            const activeDbNames = activeDbCategories.map(c => c.product_type.toLowerCase());
+
+            // Build final list starting with active DB items
+            let finalCategories = [...activeDbCategories];
             
+            // Loop through defaults. ONLY add them if they aren't in active DB AND aren't marked as deleted in DB
             defaultCategories.forEach(def => {
-                if(!dbNames.includes(def.product_type.toLowerCase())) {
+                const defName = def.product_type.toLowerCase();
+                if (!activeDbNames.includes(defName) && !deletedDbNames.includes(defName)) {
                     finalCategories.push(def);
                 }
             });
@@ -526,11 +472,13 @@
             }
 
             finalCategories.forEach(cat => {
+                const escName = cat.product_type.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                
                 let adminActions = isAdmin ? `
                     <div class="admin-actions">
-                        <button class="duplicate-btn" onclick="openCategoryModal(event, '${cat.product_type}', true)">⧉</button>
-                        <button class="edit-btn" onclick="openCategoryModal(event, '${cat.product_type}', false)">✎</button>
-                        <button class="delete-btn" onclick="deleteCategory(event, '${cat.product_type}')">✕</button>
+                        <button class="duplicate-btn" onclick="openCategoryModal(event, '${escName}', true)">⧉</button>
+                        <button class="edit-btn" onclick="openCategoryModal(event, '${escName}', false)">✎</button>
+                        <button class="delete-btn" onclick="deleteCategory(event, '${escName}')">✕</button>
                     </div>` : '';
                 
                 container.innerHTML += `
@@ -616,7 +564,14 @@
 
             const originalType = document.getElementById('addCategoryModal').getAttribute('data-original-type');
             try {
-                if (originalType && originalType !== type) await fetchWithBust(`/api/categories/${encodeURIComponent(originalType)}`, { method: 'DELETE' });
+                // If editing and name changed, explicitly delete the old one
+                if (originalType && originalType !== type) {
+                    await fetchWithBust('/api/categories/delete', {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ product_type: originalType })
+                    });
+                }
                 
                 const res = await fetchWithBust('/api/categories', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
                 const data = await res.json();
@@ -634,7 +589,11 @@
             if(!isAdmin) return;
             if(confirm(`Delete "${type}" globally?`)) {
                 try {
-                    const res = await fetchWithBust(`/api/categories/${encodeURIComponent(type)}`, { method: 'DELETE' });
+                    const res = await fetchWithBust('/api/categories/delete', {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ product_type: type })
+                    });
                     if((await res.json()).success) {
                         showToast("Deleted globally!");
                         renderCategoryGrid();
