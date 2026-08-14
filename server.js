@@ -10,9 +10,7 @@ const PORT = process.env.PORT || 3000;
 // Connect to Neon Postgres Database
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: { rejectUnauthorized: false }
 });
 
 // Middleware
@@ -27,10 +25,13 @@ app.use(session({
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// Initialize Database Tables in Neon
+// Initialize Database Tables
 async function initDb() {
+    if (!process.env.DATABASE_URL) {
+        console.warn("WARNING: No DATABASE_URL found. Database will not connect.");
+        return;
+    }
     try {
-        // Table for Custom Hex Codes
         await pool.query(`
             CREATE TABLE IF NOT EXISTS hex_codes (
                 id SERIAL PRIMARY KEY,
@@ -40,7 +41,6 @@ async function initDb() {
             );
         `);
 
-        // Table for Categories
         await pool.query(`
             CREATE TABLE IF NOT EXISTS categories (
                 id SERIAL PRIMARY KEY,
@@ -55,7 +55,6 @@ async function initDb() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-
         console.log('Neon database initialized successfully!');
     } catch (err) {
         console.error('Error initializing database:', err);
@@ -77,8 +76,6 @@ app.get('/api/hexes', async (req, res) => {
 
 app.post('/api/hexes', async (req, res) => {
     const { hexCode } = req.body;
-    if (!hexCode) return res.status(400).json({ success: false, message: 'Hex code required' });
-
     try {
         await pool.query(
             'INSERT INTO hex_codes (hex_code, is_deleted) VALUES ($1, FALSE) ON CONFLICT (hex_code) DO UPDATE SET is_deleted = FALSE',
@@ -86,21 +83,18 @@ app.post('/api/hexes', async (req, res) => {
         );
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Failed to save hex' });
+        res.status(500).json({ success: false });
     }
 });
 
 app.delete('/api/hexes/:hex', async (req, res) => {
-    if (!req.session || !req.session.isAdmin) {
-        return res.status(403).json({ success: false, message: 'Admin access required' });
-    }
-
+    if (!req.session || !req.session.isAdmin) return res.status(403).json({ success: false });
     const formattedHex = '#' + req.params.hex.toUpperCase();
     try {
         await pool.query('UPDATE hex_codes SET is_deleted = TRUE WHERE hex_code = $1', [formattedHex]);
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Failed to delete hex' });
+        res.status(500).json({ success: false });
     }
 });
 
@@ -112,13 +106,12 @@ app.get('/api/categories', async (req, res) => {
         const result = await pool.query('SELECT * FROM categories ORDER BY created_at ASC');
         res.json({ success: true, categories: result.rows });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Failed to fetch categories' });
+        res.status(500).json({ success: false, message: 'Database query failed' });
     }
 });
 
 app.post('/api/categories', async (req, res) => {
     const { product_type, amazon, ebay, shein, debenhams, therange, tesco, bnq } = req.body;
-    
     try {
         await pool.query(`
             INSERT INTO categories (product_type, amazon, ebay, shein, debenhams, therange, tesco, bnq)
@@ -126,23 +119,19 @@ app.post('/api/categories', async (req, res) => {
             ON CONFLICT (product_type) DO UPDATE SET
             amazon = $2, ebay = $3, shein = $4, debenhams = $5, therange = $6, tesco = $7, bnq = $8
         `, [product_type, amazon, ebay, shein, debenhams, therange, tesco, bnq]);
-        
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Failed to save category' });
+        res.status(500).json({ success: false });
     }
 });
 
 app.delete('/api/categories/:id', async (req, res) => {
-    if (!req.session || !req.session.isAdmin) {
-        return res.status(403).json({ success: false, message: 'Admin access required' });
-    }
-
+    if (!req.session || !req.session.isAdmin) return res.status(403).json({ success: false });
     try {
         await pool.query('DELETE FROM categories WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Failed to delete category' });
+        res.status(500).json({ success: false });
     }
 });
 
@@ -170,7 +159,4 @@ app.post('/api/admin/logout', (req, res) => {
     req.session.destroy(() => res.json({ success: true }));
 });
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
