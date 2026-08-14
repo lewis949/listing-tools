@@ -265,9 +265,64 @@
             checkAdminStatus();
         });
 
-        // -------------------------
+        // Data Recovery: Extracts local items saved during DB downtime and pushes to live DB
+        async function migrateLocalDataToDb() {
+            const localCats = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
+            const localDeletedCats = JSON.parse(localStorage.getItem('userDeletedCategories')) || [];
+            const localHexes = JSON.parse(localStorage.getItem('userCustomHexes')) || [];
+            const localDeletedHexes = JSON.parse(localStorage.getItem('userDeletedHexes')) || [];
+            let migrated = false;
+
+            if (localCats.length > 0) {
+                for (let cat of localCats) {
+                    const payload = {
+                        product_type: cat.product_type || cat.type,
+                        amazon: cat.amazon || (cat.channels && cat.channels.amazon) || '',
+                        ebay: cat.ebay || (cat.channels && cat.channels.ebay) || '',
+                        shein: cat.shein || (cat.channels && cat.channels.shein) || '',
+                        debenhams: cat.debenhams || (cat.channels && cat.channels.debenhams) || '',
+                        therange: cat.therange || (cat.channels && cat.channels.therange) || '',
+                        tesco: cat.tesco || (cat.channels && cat.channels.tesco) || '',
+                        bnq: cat.bnq || (cat.channels && cat.channels.bnq) || ''
+                    };
+                    await fetch('/api/categories', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+                }
+                localStorage.removeItem('userCustomCategories');
+                migrated = true;
+            }
+
+            if (localDeletedCats.length > 0) {
+                for (let type of localDeletedCats) {
+                    await fetch(`/api/categories/${encodeURIComponent(type)}`, { method: 'DELETE' });
+                }
+                localStorage.removeItem('userDeletedCategories');
+                migrated = true;
+            }
+
+            if (localHexes.length > 0) {
+                for (let hex of localHexes) {
+                    await fetch('/api/hexes', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ hexCode: hex }) });
+                }
+                localStorage.removeItem('userCustomHexes');
+                migrated = true;
+            }
+
+            if (localDeletedHexes.length > 0) {
+                for (let hex of localDeletedHexes) {
+                    await fetch(`/api/hexes/${hex.replace('#','')}`, { method: 'DELETE' });
+                }
+                localStorage.removeItem('userDeletedHexes');
+                migrated = true;
+            }
+
+            if (migrated) {
+                showToast("Recovered trapped local data and synced to global database!");
+                renderCategoryGrid();
+                renderHexGrid();
+            }
+        }
+
         // STRICT API FETCHING 
-        // -------------------------
         async function fetchWithBust(url, options = {}) {
             const separator = url.includes('?') ? '&' : '?';
             const bustedUrl = `${url}${separator}t=${Date.now()}`;
@@ -292,6 +347,9 @@
                 adminBtn.style.borderColor = '#10b981';
                 adminBtn.style.color = '#10b981';
                 if(addCatBtn) addCatBtn.style.display = 'block';
+                
+                // Automatically run the data recovery when logged in!
+                migrateLocalDataToDb(); 
             } else {
                 adminBtn.textContent = 'Admin Login';
                 adminBtn.style.borderColor = 'rgba(244, 63, 94, 0.4)';
@@ -325,6 +383,8 @@
                     isAdmin = true;
                     showToast("Admin access granted!");
                     closeModal('adminLoginModal');
+                    document.getElementById('adminUser').value = '';
+                    document.getElementById('adminPass').value = '';
                     updateAdminUI();
                 } else { showToast("Login failed", true); }
             } catch (e) { showToast("Error connecting to server", true); }
@@ -440,12 +500,10 @@
                 if(data.success) {
                     dbCategories = data.categories;
                 } else {
-                    console.error("Server API returned success:false ->", data.message);
                     throw new Error(data.message || "Database Query Failed");
                 }
             } catch(e) {
-                console.error(e);
-                container.innerHTML = `<div class="empty-state" style="color:#ef4444; padding:2rem; font-weight:bold;">Database Error: ${e.message}</div>`;
+                container.innerHTML = `<div class="empty-state" style="color:#ef4444; padding:2rem; font-weight:bold;">Database Error: Failed to connect to DB</div>`;
                 return;
             }
 
@@ -587,52 +645,24 @@
 
         // Claude Builder scripts
         let currentTab = 'costumes';
-
         function switchBuilderTab(tab) {
             currentTab = tab;
-            document.getElementById('btn-costumes').classList.remove('active');
-            document.getElementById('btn-tshirts').classList.remove('active');
-            document.getElementById('btn-' + tab).classList.add('active');
-
-            document.getElementById('form-costumes').classList.remove('active');
-            document.getElementById('form-tshirts').classList.remove('active');
-            document.getElementById('form-' + tab).classList.add('active');
-
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-'+tab).classList.add('active');
+            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+            document.getElementById('form-'+tab).classList.add('active');
             document.getElementById('resultOutput').innerHTML = '<div class="empty-state">Fill out the form to generate your prompt...</div>';
             document.getElementById('copyBtn').style.display = 'none';
         }
-
-        function toggleSetField() {
-            const isSet = document.getElementById('c_isSet').checked;
-            document.getElementById('setComponentsGroup').style.display = isSet ? 'block' : 'none';
-            if(!isSet) document.getElementById('c_setComponents').value = ''; 
-        }
-
+        function toggleSetField() { document.getElementById('setComponentsGroup').style.display = document.getElementById('c_isSet').checked ? 'block' : 'none'; }
         function togglePrintFields() {
-            const printLoc = document.querySelector('input[name="t_printLocation"]:checked').value;
-            const frontGroup = document.getElementById('t_frontPrintGroup');
-            const backGroup = document.getElementById('t_backPrintGroup');
-
-            if (printLoc === 'front') {
-                frontGroup.style.display = 'block'; backGroup.style.display = 'none';
-                document.getElementById('t_backPrint').value = ''; 
-            } else if (printLoc === 'back') {
-                frontGroup.style.display = 'none'; backGroup.style.display = 'block';
-                document.getElementById('t_frontPrint').value = ''; 
-            } else {
-                frontGroup.style.display = 'block'; backGroup.style.display = 'block';
-            }
+            const loc = document.querySelector('input[name="t_printLocation"]:checked').value;
+            document.getElementById('t_frontPrintGroup').style.display = (loc==='front' || loc==='both') ? 'block' : 'none';
+            document.getElementById('t_backPrintGroup').style.display = (loc==='back' || loc==='both') ? 'block' : 'none';
         }
-
-        function getArticle(word) {
-            if (!word || word === "[INSERT COLOUR]") return 'a'; 
-            let firstLetter = word.charAt(0).toLowerCase();
-            return ['a', 'e', 'i', 'o', 'u'].includes(firstLetter) ? 'an' : 'a';
-        }
-
+        function getArticle(word) { return (!word || word === "[INSERT COLOUR]") ? 'a' : (['a', 'e', 'i', 'o', 'u'].includes(word.charAt(0).toLowerCase()) ? 'an' : 'a'); }
         function generatePrompt() {
             let promptText = "";
-
             if (currentTab === 'costumes') {
                 const itemName = document.getElementById('c_itemName').value.trim() || "[INSERT PRODUCT NAME]";
                 const eventRaw = document.getElementById('c_event').value.trim();
@@ -644,23 +674,15 @@
                 const componentsRaw = document.getElementById('c_setComponents').value.trim();
 
                 promptText = `This is ${getArticle(itemName)} ${itemName}${eventRaw ? ` for ${eventRaw}.` : '.'}`;
-                
-                if (isSet && componentsRaw) {
-                    promptText += `\n\nThis product is a set that includes the following components: ${componentsRaw}.`;
-                }
-
+                if (isSet && componentsRaw) promptText += `\n\nThis product is a set that includes the following components: ${componentsRaw}.`;
                 if (bannedTermsRaw) {
                     let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
-                    if (bannedTermsRaw.toLowerCase().includes("gildan")) {
-                        keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
-                    }
+                    if (bannedTermsRaw.toLowerCase().includes("gildan")) keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
                     promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
                 }
-
                 if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
                 if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
                 if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
-
             } else if (currentTab === 'tshirts') {
                 const colour = document.getElementById('t_colour').value.trim() || "[INSERT COLOUR]";
                 const styleText = document.querySelector('input[name="t_style"]:checked').value;
@@ -673,31 +695,22 @@
                 const extraDetailsRaw = document.getElementById('t_extraDetails').value.trim();
                 
                 promptText = `This product is ${getArticle(colour)} ${colour} ${styleText}`;
-
                 if (printLoc === 'front') promptText += ` with a ${frontPrint} print on the front.`;
                 else if (printLoc === 'back') promptText += ` with a ${backPrint} print on the back.`;
                 else if (printLoc === 'both') promptText += ` with a ${frontPrint} print on the front and a ${backPrint} print on the back.`;
-
                 if (bannedTermsRaw) {
                     let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
-                    if (bannedTermsRaw.toLowerCase().includes("gildan")) {
-                        keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
-                    }
+                    if (bannedTermsRaw.toLowerCase().includes("gildan")) keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
                     promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
                 }
-
                 if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
                 if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
                 if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
             }
-
             document.getElementById('resultOutput').textContent = promptText;
             document.getElementById('copyBtn').style.display = 'block';
-            if(window.innerWidth < 900) {
-                document.getElementById('resultOutput').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if(window.innerWidth < 900) document.getElementById('resultOutput').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-
         function copyPrompt() { navigator.clipboard.writeText(document.getElementById('resultOutput').textContent).then(() => showToast("Copied!")); }
         
         function openModal(id) { document.getElementById(id).classList.add('active'); }
