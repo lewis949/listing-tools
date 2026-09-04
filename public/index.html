@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listing Tools | Suite</title>
+    <!-- Force browser to ignore cache -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -12,7 +13,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
         body { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #172554); background-size: 400% 400%; animation: gradientBG 15s ease infinite; color: var(--text-main); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        
+
+        /* Top Navigation */
         .top-nav { width: 100%; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border); padding: 1rem 2rem; display: flex; justify-content: center; position: sticky; top: 0; z-index: 100; }
         .nav-container { max-width: 1200px; width: 100%; display: flex; align-items: center; justify-content: space-between; }
         .nav-logo { font-size: 1.25rem; font-weight: 800; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -23,6 +25,7 @@
         .admin-nav-btn { border: 1px solid rgba(244, 63, 94, 0.4); color: #f43f5e; }
         .admin-nav-btn:hover { background: rgba(244, 63, 94, 0.2); color: white; }
 
+        /* Main Content Container */
         .main-content { width: 100%; max-width: 1200px; padding: 2rem; flex: 1; }
         .tool-view { display: none; animation: fadeIn 0.4s ease-out; }
         .tool-view.active { display: block; }
@@ -30,6 +33,7 @@
         .header h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
         .header p { color: var(--text-muted); font-size: 1.1rem; }
 
+        /* Forms & Inputs */
         .form-group { margin-bottom: 1.5rem; }
         label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         input[type="text"], input[type="password"], textarea { width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-main); font-size: 1rem; transition: all 0.3s ease; }
@@ -46,6 +50,7 @@
         .panel-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
         .panel-title::before { content: ''; display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--accent-gradient); }
 
+        /* Claude Builder */
         .tabs-container { display: flex; gap: 1rem; margin-bottom: 1.5rem; width: 100%; }
         .tab-btn { flex: 1; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); color: var(--text-muted); padding: 1rem; border-radius: 12px; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
         .tab-btn.active { background: var(--glass-highlight); color: var(--text-main); border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
@@ -69,10 +74,12 @@
         .copy-btn { background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); color: white; border: 1px solid var(--glass-border); padding: 1rem 1.5rem; font-size: 1rem; font-weight: 600; border-radius: 12px; cursor: pointer; width: 100%; display: none; }
         .copy-btn:hover { background: var(--glass-highlight); }
 
+        /* Tools Header UI */
         .add-hex-panel { display: flex; gap: 1rem; justify-content: center; align-items: center; margin-bottom: 2rem; max-width: 1000px; width: 100%; margin-left: auto; margin-right: auto; }
         .search-input { flex: 1; background: rgba(0,0,0,0.3) !important; border-radius: 12px !important; padding: 0.85rem 1.25rem !important; }
         .add-btn { width: 45px !important; height: 45px !important; border-radius: 50% !important; font-size: 1.5rem !important; display: flex; align-items: center; justify-content: center; padding: 0 !important; margin-top: 0 !important; box-shadow: 0 4px 15px rgba(139,92,246,0.4); flex-shrink: 0; line-height: 1; }
 
+        /* Hex Grid */
         .hex-category { margin-bottom: 3rem; }
         .hex-category h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; color: var(--text-main); }
         .hex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; }
@@ -81,6 +88,7 @@
         .hex-swatch { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; margin-bottom: 0.75rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.1); }
         .hex-label { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 600; }
 
+        /* Admin Buttons */
         .admin-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 0.5rem; z-index: 10; }
         .duplicate-btn, .edit-btn, .delete-btn { color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: all 0.2s; }
         .duplicate-btn { background: rgba(16, 185, 129, 0.8); }
@@ -91,6 +99,7 @@
         .delete-btn:hover { background: #ef4444; transform: scale(1.1); }
         .hex-card .delete-btn { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; }
 
+        /* Category Grid */
         .category-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; transition: all 0.2s ease; }
         .category-card:hover { background: var(--glass-highlight); }
         .category-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.75rem; padding-right: 90px; }
@@ -99,9 +108,10 @@
         .channel-item { background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; cursor: pointer; transition: all 0.2s ease; }
         .channel-item:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.15); transform: translateY(-2px); }
         .channel-name { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
-        .channel-id { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #60a5fa; font-size: 0.95rem; text-align: right; word-break: break-all; }
+        .channel-id { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #60a5fa; font-size: 0.95rem; text-align: right; word-break: break-all; overflow-wrap: anywhere; }
         .admin-add-cat-btn { background: var(--accent-gradient); color: white; border: none; padding: 0.85rem 1.5rem; font-weight: 700; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
 
+        /* Modals & Toasts */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 2000; opacity: 0; transition: opacity 0.3s ease; }
         .modal-overlay.active { display: flex; opacity: 1; }
         .modal-content { background: rgba(30,41,59,0.95); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 2.5rem; width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; text-align: center; }
@@ -181,9 +191,11 @@
                     <div class="tabs-container">
                         <button class="tab-btn active" onclick="switchBuilderTab('costumes')" id="btn-costumes">Costumes</button>
                         <button class="tab-btn" onclick="switchBuilderTab('tshirts')" id="btn-tshirts">T-Shirts</button>
+                        <button class="tab-btn" onclick="switchBuilderTab('animatronics')" id="btn-animatronics">Animatronics</button>
                     </div>
                     <h2 class="panel-title">Product Details</h2>
                     
+                    <!-- COSTUMES -->
                     <form id="form-costumes" class="form-section active">
                         <div class="form-group"><label>Item Name</label><input type="text" id="c_itemName" required></div>
                         <div class="form-group"><label>Event (Optional)</label><input type="text" id="c_event"></div>
@@ -195,6 +207,7 @@
                         <div class="form-group"><label>Extra Details (Optional)</label><textarea id="c_extraDetails"></textarea></div>
                     </form>
 
+                    <!-- T-SHIRTS -->
                     <form id="form-tshirts" class="form-section">
                         <div class="form-group"><label>T-Shirt Age/Colour</label><input type="text" id="t_colour" placeholder="Kids Black, Adults Neon Pink" required></div>
                         <label>Style</label>
@@ -215,6 +228,37 @@
                         <div class="form-group"><label>Size Guide (Optional)</label><textarea id="t_sizeGuide"></textarea></div>
                         <div class="form-group"><label>Extra Details (Optional)</label><textarea id="t_extraDetails"></textarea></div>
                     </form>
+
+                    <!-- ANIMATRONICS -->
+                    <form id="form-animatronics" class="form-section">
+                        <div class="form-group"><label>Item Name</label><input type="text" id="a_itemName" required></div>
+                        <div class="form-group"><label>Event (Optional)</label><input type="text" id="a_event"></div>
+                        <div class="form-group"><label>Banned Terms (Optional)</label><input type="text" id="a_bannedTerms"></div>
+                        <div class="form-group"><label>Focus Theme (Optional)</label><input type="text" id="a_focus"></div>
+                        
+                        <label>Pack Sizes</label>
+                        <div class="radio-group">
+                            <label class="custom-radio"><input type="checkbox" name="a_packSizes" value="1"> 1</label>
+                            <label class="custom-radio"><input type="checkbox" name="a_packSizes" value="2"> 2</label>
+                            <label class="custom-radio"><input type="checkbox" name="a_packSizes" value="3"> 3</label>
+                            <label class="custom-radio"><input type="checkbox" name="a_packSizes" value="4"> 4</label>
+                            <label class="custom-radio"><input type="checkbox" name="a_packSizes" value="5"> 5</label>
+                            <label class="custom-radio"><input type="checkbox" name="a_packSizes" value="6"> 6</label>
+                            <label class="custom-radio"><input type="checkbox" name="a_packSizes" value="12"> 12</label>
+                            <label class="custom-radio"><input type="checkbox" name="a_packSizes" value="24"> 24</label>
+                            <label class="custom-radio"><input type="checkbox" name="a_packSizes" value="48"> 48</label>
+                        </div>
+
+                        <label>Activation Type</label>
+                        <div class="radio-group">
+                            <label class="custom-radio"><input type="radio" name="a_activation" value="Motion-Activated" checked> Motion-Activated</label>
+                            <label class="custom-radio"><input type="radio" name="a_activation" value="Sound-Activated"> Sound-Activated</label>
+                        </div>
+
+                        <div class="form-group"><label>Batteries</label><input type="text" id="a_batteries" placeholder="e.g. Requires 3x AA batteries (not included)"></div>
+                        <div class="form-group"><label>Size Guide (Optional)</label><textarea id="a_sizeGuide"></textarea></div>
+                    </form>
+
                     <button type="button" class="primary-btn" onclick="generatePrompt()">Generate Prompt</button>
                 </div>
                 <div class="panel">
@@ -257,6 +301,68 @@
             checkAdminStatus();
         });
 
+        // -------------------------
+        // DATA RECOVERY 
+        // -------------------------
+        async function migrateLocalDataToDb() {
+            const localCats = JSON.parse(localStorage.getItem('userCustomCategories')) || [];
+            const localDeletedCats = JSON.parse(localStorage.getItem('userDeletedCategories')) || [];
+            const localHexes = JSON.parse(localStorage.getItem('userCustomHexes')) || [];
+            const localDeletedHexes = JSON.parse(localStorage.getItem('userDeletedHexes')) || [];
+            let migrated = false;
+
+            if (localCats.length > 0) {
+                for (let cat of localCats) {
+                    const payload = {
+                        product_type: cat.product_type || cat.type,
+                        amazon: cat.amazon || (cat.channels && cat.channels.amazon) || '',
+                        ebay: cat.ebay || (cat.channels && cat.channels.ebay) || '',
+                        shein: cat.shein || (cat.channels && cat.channels.shein) || '',
+                        debenhams: cat.debenhams || (cat.channels && cat.channels.debenhams) || '',
+                        therange: cat.therange || (cat.channels && cat.channels.therange) || '',
+                        tesco: cat.tesco || (cat.channels && cat.channels.tesco) || '',
+                        bnq: cat.bnq || (cat.channels && cat.channels.bnq) || ''
+                    };
+                    await fetchWithBust('/api/categories', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+                }
+                localStorage.removeItem('userCustomCategories');
+                migrated = true;
+            }
+
+            if (localDeletedCats.length > 0) {
+                for (let type of localDeletedCats) {
+                    await fetchWithBust('/api/categories/delete', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ product_type: type }) });
+                }
+                localStorage.removeItem('userDeletedCategories');
+                migrated = true;
+            }
+
+            if (localHexes.length > 0) {
+                for (let hex of localHexes) {
+                    await fetchWithBust('/api/hexes', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ hexCode: hex }) });
+                }
+                localStorage.removeItem('userCustomHexes');
+                migrated = true;
+            }
+
+            if (localDeletedHexes.length > 0) {
+                for (let hex of localDeletedHexes) {
+                    await fetchWithBust('/api/hexes/delete', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ hex_code: hex }) });
+                }
+                localStorage.removeItem('userDeletedHexes');
+                migrated = true;
+            }
+
+            if (migrated) {
+                showToast("Recovered trapped local data and synced to global database!");
+                renderCategoryGrid();
+                renderHexGrid();
+            }
+        }
+
+        // -------------------------
+        // STRICT API FETCHING 
+        // -------------------------
         async function fetchWithBust(url, options = {}) {
             const separator = url.includes('?') ? '&' : '?';
             const bustedUrl = `${url}${separator}t=${Date.now()}`;
@@ -281,6 +387,7 @@
                 adminBtn.style.borderColor = '#10b981';
                 adminBtn.style.color = '#10b981';
                 if(addCatBtn) addCatBtn.style.display = 'block';
+                migrateLocalDataToDb(); 
             } else {
                 adminBtn.textContent = 'Admin Login';
                 adminBtn.style.borderColor = 'rgba(244, 63, 94, 0.4)';
@@ -365,7 +472,6 @@
             s = Math.round(s * 100);
             l = Math.round(l * 100);
 
-            // Relaxed Neutral thresholds so dark greens/blues/reds aren't caught
             if (s <= 8 || l <= 8 || l >= 96) return "Neutrals & Greys";
             if (h >= 15 && h <= 50 && s <= 70 && l <= 55) return "Browns & Earth Tones";
             if (h < 15 || h >= 315) return "Reds & Pinks";
@@ -452,7 +558,7 @@
             if(!isAdmin) return;
             if(confirm(`Delete ${hex} globally?`)) {
                 try {
-                    await fetchWithBust('/api/hexes/delete', {
+                    const res = await fetchWithBust('/api/hexes/delete', {
                         method: 'POST',
                         headers: {'Content-Type':'application/json'},
                         body: JSON.stringify({ hex_code: hex })
@@ -656,13 +762,16 @@
             document.getElementById('resultOutput').innerHTML = '<div class="empty-state">Fill out the form to generate your prompt...</div>';
             document.getElementById('copyBtn').style.display = 'none';
         }
+        
         function toggleSetField() { document.getElementById('setComponentsGroup').style.display = document.getElementById('c_isSet').checked ? 'block' : 'none'; }
         function togglePrintFields() {
             const loc = document.querySelector('input[name="t_printLocation"]:checked').value;
             document.getElementById('t_frontPrintGroup').style.display = (loc==='front' || loc==='both') ? 'block' : 'none';
             document.getElementById('t_backPrintGroup').style.display = (loc==='back' || loc==='both') ? 'block' : 'none';
         }
+
         function getArticle(word) { return (!word || word === "[INSERT COLOUR]") ? 'a' : (['a', 'e', 'i', 'o', 'u'].includes(word.charAt(0).toLowerCase()) ? 'an' : 'a'); }
+        
         function generatePrompt() {
             let promptText = "";
             if (currentTab === 'costumes') {
@@ -708,11 +817,49 @@
                 if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
                 if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
                 if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
+            } else if (currentTab === 'animatronics') {
+                const itemName = document.getElementById('a_itemName').value.trim() || "[INSERT PRODUCT NAME]";
+                const eventRaw = document.getElementById('a_event').value.trim();
+                const bannedTermsRaw = document.getElementById('a_bannedTerms').value.trim();
+                const focusRaw = document.getElementById('a_focus').value.trim();
+                const batteriesRaw = document.getElementById('a_batteries').value.trim();
+                const sizeGuideRaw = document.getElementById('a_sizeGuide').value.trim();
+
+                const packSizeNodes = document.querySelectorAll('input[name="a_packSizes"]:checked');
+                const packSizes = Array.from(packSizeNodes).map(n => n.value);
+
+                const activationNode = document.querySelector('input[name="a_activation"]:checked');
+                const activation = activationNode ? activationNode.value : "";
+
+                promptText = `This product is ${getArticle(itemName)} ${itemName}${eventRaw ? ` for ${eventRaw}.` : '.'}`;
+                
+                if (packSizes.length > 0) {
+                    promptText += `\n\nThis product is available in the following pack sizes: ${packSizes.join(', ')}.`;
+                }
+
+                if (activation) {
+                    promptText += `\n\nIt features ${activation} technology.`;
+                }
+
+                if (batteriesRaw) {
+                    promptText += `\n\nBattery requirements: ${batteriesRaw}.`;
+                }
+
+                if (bannedTermsRaw) {
+                    let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
+                    if (bannedTermsRaw.toLowerCase().includes("gildan")) keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
+                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
+                }
+
+                if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
+                if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
             }
+            
             document.getElementById('resultOutput').textContent = promptText;
             document.getElementById('copyBtn').style.display = 'block';
             if(window.innerWidth < 900) document.getElementById('resultOutput').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+
         function copyPrompt() { navigator.clipboard.writeText(document.getElementById('resultOutput').textContent).then(() => showToast("Copied!")); }
         
         function openModal(id) { document.getElementById(id).classList.add('active'); }
