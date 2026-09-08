@@ -4,24 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listing Tools | Suite</title>
-    <!-- Force browser to ignore cache -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <style>
-        :root { --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-highlight: rgba(255, 255, 255, 0.15); --text-main: #ffffff; --text-muted: #cbd5e1; --accent-gradient: linear-gradient(135deg, #f43f5e, #8b5cf6, #3b82f6); --radius: 20px; }
+        :root { 
+            --glass-bg: rgba(255, 255, 255, 0.05); 
+            --glass-border: rgba(255, 255, 255, 0.1); 
+            --glass-highlight: rgba(255, 255, 255, 0.15); 
+            --text-main: #ffffff; 
+            --text-muted: #cbd5e1; 
+            --radius: 20px; 
+            
+            /* Default Theme (Blue/Purple) */
+            --bg-gradient: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #172554);
+            --accent-gradient: linear-gradient(135deg, #f43f5e, #8b5cf6, #3b82f6);
+            --primary-color: #8b5cf6;
+            --primary-trans: rgba(139, 92, 246, 0.2);
+            --primary-trans-hover: rgba(139, 92, 246, 0.5);
+            --primary-glow: rgba(139, 92, 246, 0.4);
+        }
+
+        /* Seasonal Theme: Halloween (October) */
+        body.theme-halloween {
+            --bg-gradient: linear-gradient(-45deg, #110505, #220b00, #3d1400, #16021f);
+            --accent-gradient: linear-gradient(135deg, #f97316, #ea580c, #9333ea);
+            --primary-color: #f97316;
+            --primary-trans: rgba(249, 115, 22, 0.2);
+            --primary-trans-hover: rgba(249, 115, 22, 0.5);
+            --primary-glow: rgba(249, 115, 22, 0.4);
+        }
+
+        /* Seasonal Theme: Christmas (December) */
+        body.theme-christmas {
+            --bg-gradient: linear-gradient(-45deg, #051109, #0f1c12, #2d0b0b, #0c1a11);
+            --accent-gradient: linear-gradient(135deg, #ef4444, #10b981, #f59e0b);
+            --primary-color: #10b981;
+            --primary-trans: rgba(16, 185, 129, 0.2);
+            --primary-trans-hover: rgba(16, 185, 129, 0.5);
+            --primary-glow: rgba(16, 185, 129, 0.4);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-        body { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #172554); background-size: 400% 400%; animation: gradientBG 15s ease infinite; color: var(--text-main); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        body { background: var(--bg-gradient); background-size: 400% 400%; animation: gradientBG 15s ease infinite; color: var(--text-main); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; align-items: center; transition: background 0.5s ease; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         /* Top Navigation */
         .top-nav { width: 100%; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border); padding: 1rem 2rem; display: flex; justify-content: center; position: sticky; top: 0; z-index: 100; }
         .nav-container { max-width: 1200px; width: 100%; display: flex; align-items: center; justify-content: space-between; }
-        .nav-logo { font-size: 1.25rem; font-weight: 800; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-logo { font-size: 1.25rem; font-weight: 800; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; transition: background 0.5s ease; }
         .nav-links { display: flex; gap: 1rem; align-items: center; }
         .nav-btn { background: transparent; color: var(--text-muted); border: none; padding: 0.5rem 1rem; font-size: 1rem; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.3s ease; }
         .nav-btn:hover { background: var(--glass-highlight); color: var(--text-main); }
-        .nav-btn.active { background: rgba(139, 92, 246, 0.2); color: white; border: 1px solid rgba(139, 92, 246, 0.5); }
+        .nav-btn.active { background: var(--primary-trans); color: white; border: 1px solid var(--primary-trans-hover); }
         .admin-nav-btn { border: 1px solid rgba(244, 63, 94, 0.4); color: #f43f5e; }
         .admin-nav-btn:hover { background: rgba(244, 63, 94, 0.2); color: white; }
 
@@ -37,12 +72,12 @@
         .form-group { margin-bottom: 1.5rem; }
         label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         input[type="text"], input[type="password"], textarea { width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-main); font-size: 1rem; transition: all 0.3s ease; }
-        input[type="text"]:focus, input[type="password"]:focus, textarea:focus { outline: none; background: rgba(0, 0, 0, 0.4); border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139, 92, 246, 0.3); }
+        input[type="text"]:focus, input[type="password"]:focus, textarea:focus { outline: none; background: rgba(0, 0, 0, 0.4); border-color: var(--primary-color); box-shadow: 0 0 15px var(--primary-trans-hover); }
         input:disabled { opacity: 0.6; cursor: not-allowed; }
         textarea { resize: vertical; min-height: 100px; }
 
         button.primary-btn { background: var(--accent-gradient); color: white; border: none; padding: 1.25rem; font-size: 1.1rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; width: 100%; margin-top: 1rem; }
-        button.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6); }
+        button.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px var(--primary-trans-hover); }
         button.secondary-btn { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid var(--glass-border); padding: 1.25rem; font-size: 1.1rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; width: 100%; margin-top: 1rem; }
         button.secondary-btn:hover { background: var(--glass-highlight); }
 
@@ -53,7 +88,7 @@
         /* Claude Builder */
         .tabs-container { display: flex; gap: 1rem; margin-bottom: 1.5rem; width: 100%; }
         .tab-btn { flex: 1; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); color: var(--text-muted); padding: 1rem; border-radius: 12px; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
-        .tab-btn.active { background: var(--glass-highlight); color: var(--text-main); border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+        .tab-btn.active { background: var(--glass-highlight); color: var(--text-main); border-color: var(--primary-color); box-shadow: 0 0 15px var(--primary-trans); }
         .layout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
         @media (min-width: 900px) { .layout-grid { grid-template-columns: 1fr 1fr; } }
         .form-section { display: none; }
@@ -61,7 +96,7 @@
         .dynamic-field { display: none; }
         .radio-group { display: flex; flex-wrap: wrap; gap: 1.5rem; background: rgba(0,0,0,0.2); padding: 1rem 1.25rem; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 1.5rem; }
         .custom-radio { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0; text-transform: none; }
-        .custom-radio input { accent-color: #8b5cf6; width: 18px; height: 18px; cursor: pointer; }
+        .custom-radio input { accent-color: var(--primary-color); width: 18px; height: 18px; cursor: pointer; }
         .toggle-container { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 1rem 1.25rem; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 1.5rem; }
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -77,7 +112,7 @@
         /* Tools Header UI */
         .add-hex-panel { display: flex; gap: 1rem; justify-content: center; align-items: center; margin-bottom: 2rem; max-width: 1000px; width: 100%; margin-left: auto; margin-right: auto; }
         .search-input { flex: 1; background: rgba(0,0,0,0.3) !important; border-radius: 12px !important; padding: 0.85rem 1.25rem !important; }
-        .add-btn { width: 45px !important; height: 45px !important; border-radius: 50% !important; font-size: 1.5rem !important; display: flex; align-items: center; justify-content: center; padding: 0 !important; margin-top: 0 !important; box-shadow: 0 4px 15px rgba(139,92,246,0.4); flex-shrink: 0; line-height: 1; }
+        .add-btn { width: 45px !important; height: 45px !important; border-radius: 50% !important; font-size: 1.5rem !important; display: flex; align-items: center; justify-content: center; padding: 0 !important; margin-top: 0 !important; box-shadow: 0 4px 15px var(--primary-glow); flex-shrink: 0; line-height: 1; }
 
         /* Hex Grid */
         .hex-category { margin-bottom: 3rem; }
@@ -106,10 +141,11 @@
         .category-title { font-size: 1.3rem; font-weight: 700; }
         .channels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
         .channel-item { background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; cursor: pointer; transition: all 0.2s ease; }
-        .channel-item:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.15); transform: translateY(-2px); }
+        .channel-item:hover { border-color: var(--primary-color); background: var(--primary-trans); transform: translateY(-2px); }
         .channel-name { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
         .channel-id { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #60a5fa; font-size: 0.95rem; text-align: right; word-break: break-all; overflow-wrap: anywhere; }
-        .admin-add-cat-btn { background: var(--accent-gradient); color: white; border: none; padding: 0.85rem 1.5rem; font-weight: 700; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139,92,246,0.4); }
+        .admin-add-cat-btn { background: var(--accent-gradient); color: white; border: none; padding: 0.85rem 1.5rem; font-weight: 700; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.3s ease; box-shadow: 0 4px 15px var(--primary-glow); }
+        .admin-add-cat-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px var(--primary-trans-hover); }
 
         /* Modals & Toasts */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 2000; opacity: 0; transition: opacity 0.3s ease; }
@@ -137,7 +173,6 @@
 
     <div id="toast" class="toast">Copied to clipboard!</div>
 
-    <!-- MODAL: ADD HEX -->
     <div id="addHexModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Add Custom Colour</h2>
@@ -149,7 +184,6 @@
         </div>
     </div>
 
-    <!-- MODAL: ADD/EDIT/DUPLICATE CATEGORY ID -->
     <div id="addCategoryModal" class="modal-overlay" data-original-type="">
         <div class="modal-content">
             <h2 id="categoryModalTitle">Add Product Category</h2>
@@ -169,7 +203,6 @@
         </div>
     </div>
 
-    <!-- MODAL: ADMIN LOGIN -->
     <div id="adminLoginModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Admin Login</h2>
@@ -183,7 +216,6 @@
     </div>
 
     <div class="main-content">
-        <!-- TOOL 1: CLAUDE BUILDER -->
         <div id="tool-claude" class="tool-view active">
             <div class="header"><h1>Claude Collaboration Builder</h1><p>Generate perfect AI briefs for your products.</p></div>
             <div class="layout-grid">
@@ -195,7 +227,6 @@
                     </div>
                     <h2 class="panel-title">Product Details</h2>
                     
-                    <!-- COSTUMES -->
                     <form id="form-costumes" class="form-section active">
                         <div class="form-group"><label>Item Name</label><input type="text" id="c_itemName" required></div>
                         <div class="form-group"><label>Event (Optional)</label><input type="text" id="c_event"></div>
@@ -207,7 +238,6 @@
                         <div class="form-group"><label>Extra Details (Optional)</label><textarea id="c_extraDetails"></textarea></div>
                     </form>
 
-                    <!-- T-SHIRTS -->
                     <form id="form-tshirts" class="form-section">
                         <div class="form-group"><label>T-Shirt Age/Colour</label><input type="text" id="t_colour" placeholder="Kids Black, Adults Neon Pink" required></div>
                         <label>Style</label>
@@ -229,7 +259,6 @@
                         <div class="form-group"><label>Extra Details (Optional)</label><textarea id="t_extraDetails"></textarea></div>
                     </form>
 
-                    <!-- ANIMATRONICS -->
                     <form id="form-animatronics" class="form-section">
                         <div class="form-group"><label>Item Name</label><input type="text" id="a_itemName" required></div>
                         <div class="form-group"><label>Event (Optional)</label><input type="text" id="a_event"></div>
@@ -269,7 +298,6 @@
             </div>
         </div>
 
-        <!-- TOOL 2: HEX CODES -->
         <div id="tool-hex" class="tool-view">
             <div class="header"><h1>Colour Hex Codes</h1><p>Search by shade or add custom hex codes.</p></div>
             <div class="add-hex-panel">
@@ -279,7 +307,6 @@
             <div class="panel" style="max-width: 1000px; margin: 0 auto;"><div id="hex-container"></div></div>
         </div>
 
-        <!-- TOOL 3: CATEGORY IDS -->
         <div id="tool-cat" class="tool-view">
             <div class="header"><h1>Category ID Finder</h1><p>Search and click to copy Category IDs.</p></div>
             <div class="add-hex-panel">
@@ -292,14 +319,27 @@
         </div>
     </div>
 
-    <!-- SCRIPT -->
     <script>
         let isAdmin = false;
         let globalCategories = [];
 
         window.addEventListener('DOMContentLoaded', () => {
+            applySeasonalTheme();
             checkAdminStatus();
         });
+
+        // -------------------------
+        // SEASONAL THEMES
+        // -------------------------
+        function applySeasonalTheme() {
+            const currentMonth = new Date().getMonth(); // 0 is January, 9 is October, 11 is December
+            
+            if (currentMonth === 9) {
+                document.body.classList.add('theme-halloween');
+            } else if (currentMonth === 11) {
+                document.body.classList.add('theme-christmas');
+            }
+        }
 
         // -------------------------
         // DATA RECOVERY 
@@ -558,7 +598,7 @@
             if(!isAdmin) return;
             if(confirm(`Delete ${hex} globally?`)) {
                 try {
-                    const res = await fetchWithBust('/api/hexes/delete', {
+                    await fetchWithBust('/api/hexes/delete', {
                         method: 'POST',
                         headers: {'Content-Type':'application/json'},
                         body: JSON.stringify({ hex_code: hex })
