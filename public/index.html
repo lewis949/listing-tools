@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listing Tools | Suite</title>
+    <!-- Force browser to ignore cache -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -173,6 +174,7 @@
 
     <div id="toast" class="toast">Copied to clipboard!</div>
 
+    <!-- MODAL: ADD HEX -->
     <div id="addHexModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Add Custom Colour</h2>
@@ -184,6 +186,7 @@
         </div>
     </div>
 
+    <!-- MODAL: ADD/EDIT/DUPLICATE CATEGORY ID -->
     <div id="addCategoryModal" class="modal-overlay" data-original-type="">
         <div class="modal-content">
             <h2 id="categoryModalTitle">Add Product Category</h2>
@@ -203,6 +206,7 @@
         </div>
     </div>
 
+    <!-- MODAL: ADMIN LOGIN -->
     <div id="adminLoginModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Admin Login</h2>
@@ -216,6 +220,7 @@
     </div>
 
     <div class="main-content">
+        <!-- TOOL 1: CLAUDE BUILDER -->
         <div id="tool-claude" class="tool-view active">
             <div class="header"><h1>Claude Collaboration Builder</h1><p>Generate perfect AI briefs for your products.</p></div>
             <div class="layout-grid">
@@ -227,6 +232,7 @@
                     </div>
                     <h2 class="panel-title">Product Details</h2>
                     
+                    <!-- COSTUMES -->
                     <form id="form-costumes" class="form-section active">
                         <div class="form-group"><label>Item Name</label><input type="text" id="c_itemName" required></div>
                         <div class="form-group"><label>Event (Optional)</label><input type="text" id="c_event"></div>
@@ -238,6 +244,7 @@
                         <div class="form-group"><label>Extra Details (Optional)</label><textarea id="c_extraDetails"></textarea></div>
                     </form>
 
+                    <!-- T-SHIRTS -->
                     <form id="form-tshirts" class="form-section">
                         <div class="form-group"><label>T-Shirt Age/Colour</label><input type="text" id="t_colour" placeholder="Kids Black, Adults Neon Pink" required></div>
                         <label>Style</label>
@@ -259,8 +266,11 @@
                         <div class="form-group"><label>Extra Details (Optional)</label><textarea id="t_extraDetails"></textarea></div>
                     </form>
 
+                    <!-- ANIMATRONICS -->
                     <form id="form-animatronics" class="form-section">
                         <div class="form-group"><label>Item Name</label><input type="text" id="a_itemName" required></div>
+                        <!-- NEW FIELD ADDED HERE -->
+                        <div class="form-group"><label>What it does</label><input type="text" id="a_actionDescription" placeholder="e.g. leaps forward and laughs maniacally"></div>
                         <div class="form-group"><label>Event (Optional)</label><input type="text" id="a_event"></div>
                         <div class="form-group"><label>Banned Terms (Optional)</label><input type="text" id="a_bannedTerms"></div>
                         <div class="form-group"><label>Focus Theme (Optional)</label><input type="text" id="a_focus"></div>
@@ -298,6 +308,7 @@
             </div>
         </div>
 
+        <!-- TOOL 2: HEX CODES -->
         <div id="tool-hex" class="tool-view">
             <div class="header"><h1>Colour Hex Codes</h1><p>Search by shade or add custom hex codes.</p></div>
             <div class="add-hex-panel">
@@ -307,6 +318,7 @@
             <div class="panel" style="max-width: 1000px; margin: 0 auto;"><div id="hex-container"></div></div>
         </div>
 
+        <!-- TOOL 3: CATEGORY IDS -->
         <div id="tool-cat" class="tool-view">
             <div class="header"><h1>Category ID Finder</h1><p>Search and click to copy Category IDs.</p></div>
             <div class="add-hex-panel">
@@ -319,6 +331,7 @@
         </div>
     </div>
 
+    <!-- SCRIPT -->
     <script>
         let isAdmin = false;
         let globalCategories = [];
@@ -332,7 +345,7 @@
         // SEASONAL THEMES
         // -------------------------
         function applySeasonalTheme() {
-            const currentMonth = new Date().getMonth(); // 0 is January, 9 is October, 11 is December
+            const currentMonth = new Date().getMonth(); 
             
             if (currentMonth === 9) {
                 document.body.classList.add('theme-halloween');
@@ -859,6 +872,7 @@
                 if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
             } else if (currentTab === 'animatronics') {
                 const itemName = document.getElementById('a_itemName').value.trim() || "[INSERT PRODUCT NAME]";
+                const actionDesc = document.getElementById('a_actionDescription').value.trim();
                 const eventRaw = document.getElementById('a_event').value.trim();
                 const bannedTermsRaw = document.getElementById('a_bannedTerms').value.trim();
                 const focusRaw = document.getElementById('a_focus').value.trim();
@@ -877,8 +891,14 @@
                     promptText += `\n\nThis product is available in the following pack sizes: ${packSizes.join(', ')}.`;
                 }
 
-                if (activation) {
-                    promptText += `\n\nIt features ${activation} technology.`;
+                if (actionDesc || activation) {
+                    if (actionDesc && activation) {
+                        promptText += `\n\nThe product ${actionDesc} and is ${activation.toLowerCase()}.`;
+                    } else if (actionDesc) {
+                        promptText += `\n\nThe product ${actionDesc}.`;
+                    } else if (activation) {
+                        promptText += `\n\nThe product is ${activation.toLowerCase()}.`;
+                    }
                 }
 
                 if (batteriesRaw) {
