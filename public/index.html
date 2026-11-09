@@ -270,11 +270,6 @@
                     <!-- SWEATSHIRTS -->
                     <form id="form-sweatshirts" class="form-section">
                         <div class="form-group"><label>Sweatshirt Age/Colour</label><input type="text" id="s_colour" placeholder="Kids Black, Adults Neon Pink" required></div>
-                        <label>Style</label>
-                        <div class="radio-group">
-                            <label class="custom-radio"><input type="radio" name="s_style" value="Classic Sweatshirt" checked> Classic Sweatshirt</label>
-                            <label class="custom-radio"><input type="radio" name="s_style" value="Cropped Sweatshirt"> Cropped Sweatshirt</label>
-                        </div>
                         <label>Print Location</label>
                         <div class="radio-group">
                             <label class="custom-radio"><input type="radio" name="s_printLocation" value="front" onchange="togglePrintFields()" checked> Front Print</label>
@@ -901,7 +896,6 @@
                 if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
             } else if (currentTab === 'sweatshirts') {
                 const colour = document.getElementById('s_colour').value.trim() || "[INSERT COLOUR]";
-                const styleText = document.querySelector('input[name="s_style"]:checked').value;
                 const printLoc = document.querySelector('input[name="s_printLocation"]:checked').value;
                 const frontPrint = document.getElementById('s_frontPrint').value.trim() || "[INSERT FRONT PRINT DESCRIPTION]";
                 const backPrint = document.getElementById('s_backPrint').value.trim() || "[INSERT BACK PRINT DESCRIPTION]";
@@ -910,7 +904,7 @@
                 const sizeGuideRaw = document.getElementById('s_sizeGuide').value.trim();
                 const extraDetailsRaw = document.getElementById('s_extraDetails').value.trim();
                 
-                promptText = `This product is ${getArticle(colour)} ${colour} ${styleText}`;
+                promptText = `This product is ${getArticle(colour)} ${colour} Classic Sweatshirt`;
                 if (printLoc === 'front') promptText += ` with a ${frontPrint} print on the front.`;
                 else if (printLoc === 'back') promptText += ` with a ${backPrint} print on the back.`;
                 else if (printLoc === 'both') promptText += ` with a ${frontPrint} print on the front and a ${backPrint} print on the back.`;
