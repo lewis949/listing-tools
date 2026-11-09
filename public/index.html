@@ -105,7 +105,23 @@
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background: var(--accent-gradient); }
         input:checked + .slider:before { transform: translateX(22px); }
-        .result-box { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 1.5rem; border-radius: 12px; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; color: #e2e8f0; font-size: 0.95rem; line-height: 1.8; height: calc(100% - 140px); overflow-y: auto; margin-bottom: 1.5rem; }
+        
+        .result-box { 
+            background: rgba(0,0,0,0.3); 
+            border: 1px solid var(--glass-border); 
+            padding: 1.5rem; 
+            border-radius: 12px; 
+            white-space: pre-wrap; 
+            font-family: 'JetBrains Mono', monospace; 
+            color: #e2e8f0; 
+            font-size: 0.95rem; 
+            line-height: 1.8; 
+            min-height: 80px; 
+            max-height: 250px; 
+            overflow-y: auto; 
+            margin-bottom: 1rem; 
+        }
+        
         .empty-state { display: flex; height: 100%; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-style: italic; }
         .copy-btn { background: rgba(255,255,255,0.1); backdrop-filter: blur(4px); color: white; border: 1px solid var(--glass-border); padding: 1rem 1.5rem; font-size: 1rem; font-weight: 600; border-radius: 12px; cursor: pointer; width: 100%; display: none; }
         .copy-btn:hover { background: var(--glass-highlight); }
@@ -318,9 +334,15 @@
                     <button type="button" class="primary-btn" onclick="generatePrompt()">Generate Prompt</button>
                 </div>
                 <div class="panel">
-                    <h2 class="panel-title">Generated Prompt</h2>
-                    <div id="resultOutput" class="result-box"><div class="empty-state">Fill out the form to generate your prompt...</div></div>
-                    <button id="copyBtn" class="copy-btn" onclick="copyPrompt()">Copy to Clipboard</button>
+                    <h2 class="panel-title">Generated Prompts</h2>
+                    
+                    <label style="color: var(--text-main); font-weight: 700;">Extra Details</label>
+                    <div id="resultExtra" class="result-box"><div class="empty-state">Fill out the form to generate your prompt...</div></div>
+                    <button id="copyExtraBtn" class="copy-btn" onclick="copyPrompt('resultExtra')" style="margin-bottom: 2.5rem;">Copy Extra Details</button>
+
+                    <label style="color: var(--text-main); font-weight: 700;">Restrictions</label>
+                    <div id="resultRestrictions" class="result-box"><div class="empty-state">Fill out the form to generate your prompt...</div></div>
+                    <button id="copyRestrictionsBtn" class="copy-btn" onclick="copyPrompt('resultRestrictions')">Copy Restrictions</button>
                 </div>
             </div>
         </div>
@@ -829,8 +851,12 @@
             document.getElementById('btn-'+tab).classList.add('active');
             document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
             document.getElementById('form-'+tab).classList.add('active');
-            document.getElementById('resultOutput').innerHTML = '<div class="empty-state">Fill out the form to generate your prompt...</div>';
-            document.getElementById('copyBtn').style.display = 'none';
+            
+            document.getElementById('resultExtra').innerHTML = '<div class="empty-state">Fill out the form to generate your prompt...</div>';
+            document.getElementById('resultRestrictions').innerHTML = '<div class="empty-state">Fill out the form to generate your prompt...</div>';
+            
+            document.getElementById('copyExtraBtn').style.display = 'none';
+            document.getElementById('copyRestrictionsBtn').style.display = 'none';
         }
         
         function toggleSetField() { document.getElementById('setComponentsGroup').style.display = document.getElementById('c_isSet').checked ? 'block' : 'none'; }
@@ -850,7 +876,9 @@
         function getArticle(word) { return (!word || word === "[INSERT COLOUR]") ? 'a' : (['a', 'e', 'i', 'o', 'u'].includes(word.charAt(0).toLowerCase()) ? 'an' : 'a'); }
         
         function generatePrompt() {
-            let promptText = "";
+            let extraText = "";
+            let restText = "None.";
+            
             if (currentTab === 'costumes') {
                 const itemName = document.getElementById('c_itemName').value.trim() || "[INSERT PRODUCT NAME]";
                 const eventRaw = document.getElementById('c_event').value.trim();
@@ -861,16 +889,19 @@
                 const isSet = document.getElementById('c_isSet').checked;
                 const componentsRaw = document.getElementById('c_setComponents').value.trim();
 
-                promptText = `This is ${getArticle(itemName)} ${itemName}${eventRaw ? ` for ${eventRaw}.` : '.'}`;
-                if (isSet && componentsRaw) promptText += `\n\nThis product is a set that includes the following components: ${componentsRaw}.`;
+                extraText = `This is ${getArticle(itemName)} ${itemName}${eventRaw ? ` for ${eventRaw}.` : '.'}`;
+                if (isSet && componentsRaw) extraText += `\n\nThis product is a set that includes the following components: ${componentsRaw}.`;
+                
                 if (bannedTermsRaw) {
                     let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
                     if (bannedTermsRaw.toLowerCase().includes("gildan")) keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
-                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
+                    restText = `Do not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
                 }
-                if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
-                if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
-                if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
+                
+                if (focusRaw) extraText += `\n\nPlease make the listing ${focusRaw}-focused.`;
+                if (sizeGuideRaw) extraText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
+                if (extraDetailsRaw) extraText += `\n\nAdditional details:\n${extraDetailsRaw}`;
+            
             } else if (currentTab === 'tshirts') {
                 const colour = document.getElementById('t_colour').value.trim() || "[INSERT COLOUR]";
                 const styleText = document.querySelector('input[name="t_style"]:checked').value;
@@ -882,18 +913,21 @@
                 const sizeGuideRaw = document.getElementById('t_sizeGuide').value.trim();
                 const extraDetailsRaw = document.getElementById('t_extraDetails').value.trim();
                 
-                promptText = `This product is ${getArticle(colour)} ${colour} ${styleText}`;
-                if (printLoc === 'front') promptText += ` with a ${frontPrint} print on the front.`;
-                else if (printLoc === 'back') promptText += ` with a ${backPrint} print on the back.`;
-                else if (printLoc === 'both') promptText += ` with a ${frontPrint} print on the front and a ${backPrint} print on the back.`;
+                extraText = `This product is ${getArticle(colour)} ${colour} ${styleText}`;
+                if (printLoc === 'front') extraText += ` with a ${frontPrint} print on the front.`;
+                else if (printLoc === 'back') extraText += ` with a ${backPrint} print on the back.`;
+                else if (printLoc === 'both') extraText += ` with a ${frontPrint} print on the front and a ${backPrint} print on the back.`;
+                
                 if (bannedTermsRaw) {
                     let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
                     if (bannedTermsRaw.toLowerCase().includes("gildan")) keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
-                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
+                    restText = `Do not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
                 }
-                if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
-                if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
-                if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
+                
+                if (focusRaw) extraText += `\n\nPlease make the listing ${focusRaw}-focused.`;
+                if (sizeGuideRaw) extraText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
+                if (extraDetailsRaw) extraText += `\n\nAdditional details:\n${extraDetailsRaw}`;
+            
             } else if (currentTab === 'sweatshirts') {
                 const colour = document.getElementById('s_colour').value.trim() || "[INSERT COLOUR]";
                 const printLoc = document.querySelector('input[name="s_printLocation"]:checked').value;
@@ -904,18 +938,21 @@
                 const sizeGuideRaw = document.getElementById('s_sizeGuide').value.trim();
                 const extraDetailsRaw = document.getElementById('s_extraDetails').value.trim();
                 
-                promptText = `This product is ${getArticle(colour)} ${colour} Classic Sweatshirt`;
-                if (printLoc === 'front') promptText += ` with a ${frontPrint} print on the front.`;
-                else if (printLoc === 'back') promptText += ` with a ${backPrint} print on the back.`;
-                else if (printLoc === 'both') promptText += ` with a ${frontPrint} print on the front and a ${backPrint} print on the back.`;
+                extraText = `This product is ${getArticle(colour)} ${colour} Classic Sweatshirt`;
+                if (printLoc === 'front') extraText += ` with a ${frontPrint} print on the front.`;
+                else if (printLoc === 'back') extraText += ` with a ${backPrint} print on the back.`;
+                else if (printLoc === 'both') extraText += ` with a ${frontPrint} print on the front and a ${backPrint} print on the back.`;
+                
                 if (bannedTermsRaw) {
                     let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
                     if (bannedTermsRaw.toLowerCase().includes("gildan")) keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
-                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
+                    restText = `Do not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
                 }
-                if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
-                if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
-                if (extraDetailsRaw) promptText += `\n\nAdditional details:\n${extraDetailsRaw}`;
+                
+                if (focusRaw) extraText += `\n\nPlease make the listing ${focusRaw}-focused.`;
+                if (sizeGuideRaw) extraText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
+                if (extraDetailsRaw) extraText += `\n\nAdditional details:\n${extraDetailsRaw}`;
+            
             } else if (currentTab === 'animatronics') {
                 const itemName = document.getElementById('a_itemName').value.trim() || "[INSERT PRODUCT NAME]";
                 const actionDesc = document.getElementById('a_actionDescription').value.trim();
@@ -931,42 +968,51 @@
                 const activationNode = document.querySelector('input[name="a_activation"]:checked');
                 const activation = activationNode ? activationNode.value : "";
 
-                promptText = `This product is ${getArticle(itemName)} ${itemName}${eventRaw ? ` for ${eventRaw}.` : '.'}`;
+                extraText = `This product is ${getArticle(itemName)} ${itemName}${eventRaw ? ` for ${eventRaw}.` : '.'}`;
                 
                 if (packSizes.length > 0) {
-                    promptText += `\n\nThis product is available in the following pack sizes: ${packSizes.join(', ')}.`;
+                    extraText += `\n\nThis product is available in the following pack sizes: ${packSizes.join(', ')}.`;
                 }
 
                 if (actionDesc || activation) {
                     if (actionDesc && activation) {
-                        promptText += `\n\nIt is ${activation.toLowerCase()} and performs the following actions: ${actionDesc}.`;
+                        extraText += `\n\nIt is ${activation.toLowerCase()} and performs the following actions: ${actionDesc}.`;
                     } else if (actionDesc) {
-                        promptText += `\n\nIt performs the following actions: ${actionDesc}.`;
+                        extraText += `\n\nIt performs the following actions: ${actionDesc}.`;
                     } else if (activation) {
-                        promptText += `\n\nIt is ${activation.toLowerCase()}.`;
+                        extraText += `\n\nIt is ${activation.toLowerCase()}.`;
                     }
                 }
 
                 if (batteriesRaw) {
-                    promptText += `\n\nBattery requirements: ${batteriesRaw}.`;
+                    extraText += `\n\nBattery requirements: ${batteriesRaw}.`;
                 }
 
                 if (bannedTermsRaw) {
                     let keywordSentence = "These terms can be used in the Generic Keywords for all channels.";
                     if (bannedTermsRaw.toLowerCase().includes("gildan")) keywordSentence = "These terms, except for Gildan, can be used in the Generic Keywords for all channels.";
-                    promptText += `\n\nDo not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
+                    restText = `Do not use ${bannedTermsRaw} in the title, subtitle, short description, description or bullet points for any channel. ${keywordSentence}`;
                 }
 
-                if (focusRaw) promptText += `\n\nPlease make the listing ${focusRaw}-focused.`;
-                if (sizeGuideRaw) promptText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
+                if (focusRaw) extraText += `\n\nPlease make the listing ${focusRaw}-focused.`;
+                if (sizeGuideRaw) extraText += `\n\nThe size guide is as follows:\n${sizeGuideRaw}`;
             }
             
-            document.getElementById('resultOutput').textContent = promptText;
-            document.getElementById('copyBtn').style.display = 'block';
-            if(window.innerWidth < 900) document.getElementById('resultOutput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('resultExtra').textContent = extraText;
+            document.getElementById('resultRestrictions').textContent = restText;
+            
+            document.getElementById('copyExtraBtn').style.display = 'block';
+            document.getElementById('copyRestrictionsBtn').style.display = 'block';
+            
+            if(window.innerWidth < 900) {
+                document.getElementById('resultExtra').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
-        function copyPrompt() { navigator.clipboard.writeText(document.getElementById('resultOutput').textContent).then(() => showToast("Copied!")); }
+        function copyPrompt(id) { 
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text).then(() => showToast("Copied!")); 
+        }
         
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
