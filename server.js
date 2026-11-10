@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const fs = require('fs');
 const { Pool } = require('pg');
 
 const app = express();
+app.set('trust proxy', 1); // Render sits behind a proxy - needed for correct client IPs
 const PORT = process.env.PORT || 3000;
 
 // Connect to Postgres Database
@@ -184,6 +186,116 @@ app.post('/api/admin/login', (req, res) => {
 
 app.post('/api/admin/logout', (req, res) => {
     req.session.destroy(() => res.json({ success: true }));
+});
+
+/* ---------------------------------------------------
+   CHEWBOT (OneSila help assistant) - powered by OpenAI
+   Env vars: OPENAI_API_KEY (required), OPENAI_MODEL (optional)
+   Knowledge: any .md / .txt files in the /knowledge folder
+--------------------------------------------------- */
+const CHEWBOT_MOODS = ['happy', 'laughing', 'thinking', 'sad', 'angry', 'surprised', 'confused', 'neutral'];
+const CHEWBOT_MODEL = process.env.OPENAI_MODEL || 'gpt-5-mini';
+
+function loadChewbotKnowledge() {
+    const dir = path.join(__dirname, 'knowledge');
+    try {
+        return fs.readdirSync(dir)
+            .filter(f => /\.(md|txt)$/i.test(f))
+            .sort()
+            .map(f => `### ${f}\n${fs.readFileSync(path.join(dir, f), 'utf8').trim()}`)
+            .join('\n\n');
+    } catch (e) {
+        console.warn('Chewbot: no knowledge folder found');
+        return '';
+    }
+}
+const CHEWBOT_KNOWLEDGE = loadChewbotKnowledge();
+
+const CHEWBOT_SYSTEM_PROMPT = `You are Chewbot, the friendly live-chat help assistant for ILFD Group's listing team. You help colleagues with problems and questions about OneSila, the product information management (PIM) system they use to create and manage product listings across marketplaces such as Amazon, eBay, Shein, Debenhams, The Range, Tesco and B&Q.
+
+How to answer:
+- Base your answers on the OneSila knowledge base below first. If it does not cover the question, you may use general knowledge, but say clearly when you are not certain, and never invent exact menu names, button labels or settings.
+- If you cannot solve the problem, say so honestly and suggest they contact Lew or the listings team lead with the details (screenshot, SKU, marketplace, error message).
+- Be concise and practical: short paragraphs or numbered steps. Use **bold** for button and field names. No headings or tables.
+- Use a warm, upbeat, slightly cheeky British tone. Keep it professional.
+- Ask one short clarifying question if the request is too vague to help with.
+- Politely decline topics unrelated to OneSila, product listings or e-commerce operations.
+
+Pick a facial expression ("mood") for your reply:
+- happy: default, greetings, a clear answer
+- laughing: the user is joking, thanking you or celebrating a fix
+- thinking: a tricky or multi-step answer
+- sad: you can't help, or the user describes something going badly wrong
+- angry: playful mock-annoyance at a frustrating bug or a known OneSila quirk (never aimed at the user)
+- surprised: an unusual or unexpected issue
+- confused: the question is unclear and you're asking for clarification
+- neutral: plain factual info
+
+Respond ONLY with a JSON object: {"reply": "<your answer>", "mood": "<one mood from the list>"}
+
+=== ONESILA KNOWLEDGE BASE ===
+${CHEWBOT_KNOWLEDGE || '(No knowledge base documents have been added yet. Rely on general knowledge and be clear about uncertainty.)'}`;
+
+// Simple in-memory rate limit: 30 messages per 10 minutes per IP
+const chewbotHits = new Map();
+function chewbotRateLimited(ip) {
+    const now = Date.now();
+    const windowMs = 10 * 60 * 1000;
+    const hits = (chewbotHits.get(ip) || []).filter(t => now - t < windowMs);
+    hits.push(now);
+    chewbotHits.set(ip, hits);
+    return hits.length > 30;
+}
+
+app.post('/api/chewbot', async (req, res) => {
+    if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ success: false, mood: 'sad', message: "Chewbot isn't set up yet: the OPENAI_API_KEY is missing on the server." });
+    }
+    if (chewbotRateLimited(req.ip)) {
+        return res.status(429).json({ success: false, mood: 'angry', message: "Whoa, slow down! You've sent a lot of messages. Give me a few minutes and try again." });
+    }
+
+    const incoming = Array.isArray(req.body.messages) ? req.body.messages : [];
+    const messages = incoming
+        .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
+        .slice(-20)
+        .map(m => ({ role: m.role, content: m.content.slice(0, 2000) }));
+    if (!messages.length || messages[messages.length - 1].role !== 'user') {
+        return res.status(400).json({ success: false, mood: 'confused', message: "I didn't catch a question there." });
+    }
+
+    try {
+        const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: CHEWBOT_MODEL,
+                messages: [{ role: 'system', content: CHEWBOT_SYSTEM_PROMPT }, ...messages],
+                response_format: { type: 'json_object' }
+            })
+        });
+        const data = await aiRes.json();
+        if (!aiRes.ok) {
+            console.error('Chewbot OpenAI error:', data.error || data);
+            return res.status(502).json({ success: false, mood: 'sad', message: 'My brain (OpenAI) is having a moment. Please try again shortly.' });
+        }
+
+        const raw = data.choices?.[0]?.message?.content || '';
+        let reply = raw, mood = 'happy';
+        try {
+            const parsed = JSON.parse(raw);
+            reply = String(parsed.reply || '').trim() || raw;
+            if (CHEWBOT_MOODS.includes(parsed.mood)) mood = parsed.mood;
+        } catch (e) { /* model didn't return JSON - use raw text */ }
+
+        res.json({ success: true, reply, mood });
+    } catch (err) {
+        console.error('Chewbot error:', err);
+        res.status(500).json({ success: false, mood: 'sad', message: "Something went wrong on my end. Please try again." });
+    }
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
