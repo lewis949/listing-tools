@@ -189,12 +189,23 @@ app.post('/api/admin/logout', (req, res) => {
 });
 
 /* ---------------------------------------------------
-   CHEWBOT (OneSila help assistant) - powered by OpenAI
-   Env vars: OPENAI_API_KEY (required), OPENAI_MODEL (optional)
+   CHEWBOT (OneSila help assistant)
+   Set ONE of these env vars in Render (checked in this order):
+     GROQ_API_KEY   - free tier, no card needed (console.groq.com)
+     GEMINI_API_KEY - free tier (aistudio.google.com)
+     OPENAI_API_KEY - paid
+   Optional: CHEWBOT_MODEL to override the default model.
    Knowledge: any .md / .txt files in the /knowledge folder
 --------------------------------------------------- */
 const CHEWBOT_MOODS = ['happy', 'laughing', 'thinking', 'sad', 'angry', 'surprised', 'confused', 'neutral'];
-const CHEWBOT_MODEL = process.env.OPENAI_MODEL || 'gpt-5-mini';
+const CHEWBOT_PROVIDERS = [
+    { name: 'Groq', key: 'GROQ_API_KEY', url: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-3.3-70b-versatile' },
+    { name: 'Gemini', key: 'GEMINI_API_KEY', url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-2.5-flash' },
+    { name: 'OpenAI', key: 'OPENAI_API_KEY', url: 'https://api.openai.com/v1/chat/completions', model: 'gpt-5-mini' }
+];
+const CHEWBOT_AI = CHEWBOT_PROVIDERS.find(p => process.env[p.key]);
+const CHEWBOT_MODEL = process.env.CHEWBOT_MODEL || process.env.OPENAI_MODEL || (CHEWBOT_AI && CHEWBOT_AI.model);
+console.log(CHEWBOT_AI ? `Chewbot: using ${CHEWBOT_AI.name} (${CHEWBOT_MODEL})` : 'Chewbot: no AI key set - chat disabled');
 
 function loadChewbotKnowledge() {
     const dir = path.join(__dirname, 'knowledge');
@@ -248,8 +259,8 @@ function chewbotRateLimited(ip) {
 }
 
 app.post('/api/chewbot', async (req, res) => {
-    if (!process.env.OPENAI_API_KEY) {
-        return res.status(500).json({ success: false, mood: 'sad', message: "Chewbot isn't set up yet: the OPENAI_API_KEY is missing on the server." });
+    if (!CHEWBOT_AI) {
+        return res.status(500).json({ success: false, mood: 'sad', message: "Chewbot isn't set up yet: no AI key (GROQ_API_KEY, GEMINI_API_KEY or OPENAI_API_KEY) is set on the server." });
     }
     if (chewbotRateLimited(req.ip)) {
         return res.status(429).json({ success: false, mood: 'angry', message: "Whoa, slow down! You've sent a lot of messages. Give me a few minutes and try again." });
@@ -265,11 +276,11 @@ app.post('/api/chewbot', async (req, res) => {
     }
 
     try {
-        const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        const aiRes = await fetch(CHEWBOT_AI.url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+                'Authorization': `Bearer ${process.env[CHEWBOT_AI.key]}`
             },
             body: JSON.stringify({
                 model: CHEWBOT_MODEL,
@@ -279,8 +290,11 @@ app.post('/api/chewbot', async (req, res) => {
         });
         const data = await aiRes.json();
         if (!aiRes.ok) {
-            console.error('Chewbot OpenAI error:', data.error || data);
-            return res.status(502).json({ success: false, mood: 'sad', message: 'My brain (OpenAI) is having a moment. Please try again shortly.' });
+            console.error(`Chewbot ${CHEWBOT_AI.name} error:`, data.error || data);
+            const busy = aiRes.status === 429;
+            return res.status(502).json({ success: false, mood: busy ? 'angry' : 'sad', message: busy
+                ? "I've hit my free usage limit for the moment. Give me a minute and try again."
+                : 'My brain is having a moment. Please try again shortly.' });
         }
 
         const raw = data.choices?.[0]?.message?.content || '';
