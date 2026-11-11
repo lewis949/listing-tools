@@ -199,7 +199,7 @@ app.post('/api/admin/logout', (req, res) => {
 --------------------------------------------------- */
 const CHEWBOT_MOODS = ['happy', 'laughing', 'thinking', 'sad', 'angry', 'surprised', 'confused', 'neutral'];
 const CHEWBOT_PROVIDERS = [
-    { name: 'Groq', key: 'GROQ_API_KEY', url: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-3.3-70b-versatile' },
+    { name: 'Groq', key: 'GROQ_API_KEY', url: 'https://api.groq.com/openai/v1/chat/completions', model: 'openai/gpt-oss-120b' },
     { name: 'Gemini', key: 'GEMINI_API_KEY', url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-2.5-flash' },
     { name: 'OpenAI', key: 'OPENAI_API_KEY', url: 'https://api.openai.com/v1/chat/completions', model: 'gpt-5-mini' }
 ];
@@ -276,7 +276,7 @@ app.post('/api/chewbot', async (req, res) => {
     }
 
     try {
-        const aiRes = await fetch(CHEWBOT_AI.url, {
+        const callAI = (useJsonMode) => fetch(CHEWBOT_AI.url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -285,9 +285,15 @@ app.post('/api/chewbot', async (req, res) => {
             body: JSON.stringify({
                 model: CHEWBOT_MODEL,
                 messages: [{ role: 'system', content: CHEWBOT_SYSTEM_PROMPT }, ...messages],
-                response_format: { type: 'json_object' }
+                ...(useJsonMode ? { response_format: { type: 'json_object' } } : {})
             })
         });
+        let aiRes = await callAI(true);
+        // Some models don't support JSON mode - retry once without it
+        if (aiRes.status === 400) {
+            console.warn('Chewbot: JSON mode request rejected, retrying without it');
+            aiRes = await callAI(false);
+        }
         const data = await aiRes.json();
         if (!aiRes.ok) {
             console.error(`Chewbot ${CHEWBOT_AI.name} error:`, data.error || data);
@@ -300,7 +306,8 @@ app.post('/api/chewbot', async (req, res) => {
         const raw = data.choices?.[0]?.message?.content || '';
         let reply = raw, mood = 'happy';
         try {
-            const parsed = JSON.parse(raw);
+            const jsonText = (raw.match(/\{[\s\S]*\}/) || [raw])[0]; // tolerate ```json fences
+            const parsed = JSON.parse(jsonText);
             reply = String(parsed.reply || '').trim() || raw;
             if (CHEWBOT_MOODS.includes(parsed.mood)) mood = parsed.mood;
         } catch (e) { /* model didn't return JSON - use raw text */ }
