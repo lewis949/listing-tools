@@ -19,4 +19,4 @@ Keep it factual: Chewbot treats this as the source of truth.
 (Add how your team does things in OneSila, e.g. naming rules, required fields, approval steps.)
 
 ## Who to contact
-- For anything Chewbot can't solve: Lew.
+- For anything Chewbot can't solve: ask the real Chewis (Lew).
