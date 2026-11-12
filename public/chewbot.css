@@ -59,3 +59,12 @@
     #chewbot-root { right: 16px; bottom: 16px; }
     .chew-panel { position: fixed; right: 16px; left: 16px; bottom: 96px; width: auto; max-width: none; height: calc(100vh - 120px); }
 }
+
+/* Speech-bubble nudges */
+.chew-nudge { position: absolute; right: 6px; bottom: 86px; width: max-content; max-width: 250px; background: #fff; color: #1e1b4b; padding: .65rem 2rem .65rem .9rem; border-radius: 16px 16px 4px 16px; box-shadow: 0 10px 28px rgba(0,0,0,.35); font-size: .9rem; font-weight: 600; line-height: 1.4; opacity: 0; transform: translateY(10px) scale(.9); transform-origin: bottom right; pointer-events: none; transition: opacity .3s ease, transform .35s cubic-bezier(.68,-.55,.265,1.55); }
+.chew-nudge.show { opacity: 1; transform: none; pointer-events: auto; }
+.chew-nudge::after { content: ''; position: absolute; right: 22px; bottom: -8px; border-width: 9px 9px 0 0; border-style: solid; border-color: #fff transparent transparent transparent; }
+.chew-nudge-text { cursor: pointer; display: block; }
+.chew-nudge-close { position: absolute; top: 4px; right: 6px; width: 22px; height: 22px; border: none; background: transparent; color: #64748b; font-size: 1.1rem; line-height: 1; cursor: pointer; border-radius: 50%; }
+.chew-nudge-close:hover { background: #f1f5f9; color: #1e1b4b; }
+#chewbot-root.open .chew-nudge { display: none; }

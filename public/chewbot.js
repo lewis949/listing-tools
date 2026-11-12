@@ -294,6 +294,71 @@
         });
 
         mood('happy');
+
+        // ---- Occasional speech-bubble nudges (help offers & jokes) ----
+        const NUDGES = [
+            { text: 'Need any help with OneSila?', mood: 'happy' },
+            { text: "Got a sync error? Paste it in and I'll translate it into human.", mood: 'happy' },
+            { text: 'Stuck on a listing? Give me a shout!', mood: 'happy' },
+            { text: "I'm here if you need me. Just click my face.", mood: 'happy' },
+            { text: "Fun fact: everything weighs something. Even if Amazon thinks it's 0.", mood: 'laughing' },
+            { text: 'Hazmat Aspect? Not Applicable. You\'re welcome.', mood: 'laughing' },
+            { text: "I'm like the real Chewis, but I never need a tea break.", mood: 'laughing' },
+            { text: 'Why did the variation fall out with its parent? Different values.', mood: 'laughing' },
+            { text: "Mapping values is easier than getting out of Tesco's car park. Probably.", mood: 'laughing' },
+            { text: 'Another day, another validation issue (1).', mood: 'surprised' }
+        ];
+        const FIRST_NUDGE_MS = 45 * 1000;            // first pop-up after 45 seconds
+        const NUDGE_GAP_MS = [3 * 60000, 6 * 60000]; // then every 3-6 minutes
+        const NUDGE_SHOW_MS = 9000;                  // each one stays for 9 seconds
+        const NUDGE_OFF_KEY = 'chewbotNudgesOff';
+
+        const nudge = document.createElement('div');
+        nudge.className = 'chew-nudge';
+        nudge.setAttribute('role', 'status');
+        nudge.innerHTML = '<span class="chew-nudge-text"></span><button class="chew-nudge-close" aria-label="Hide message" title="Hide">&times;</button>';
+        root.appendChild(nudge);
+        const nudgeText = nudge.querySelector('.chew-nudge-text');
+
+        let lastNudge = -1, nudgeHideTimer = null, dismissals = 0;
+        const nudgesOff = () => { try { return sessionStorage.getItem(NUDGE_OFF_KEY) === '1'; } catch (e) { return dismissals >= 2; } };
+
+        function hideNudge() {
+            clearTimeout(nudgeHideTimer);
+            if (!nudge.classList.contains('show')) return;
+            nudge.classList.remove('show');
+            if (!root.classList.contains('open')) mood('happy');
+        }
+        function showNudge(force) {
+            if (!force && (root.classList.contains('open') || document.hidden || nudgesOff())) return;
+            let i;
+            do { i = Math.floor(Math.random() * NUDGES.length); } while (NUDGES.length > 1 && i === lastNudge);
+            lastNudge = i;
+            nudgeText.textContent = NUDGES[i].text;
+            mood(NUDGES[i].mood);
+            nudge.classList.add('show');
+            clearTimeout(nudgeHideTimer);
+            nudgeHideTimer = setTimeout(hideNudge, NUDGE_SHOW_MS);
+        }
+        function scheduleNudge(delay) {
+            setTimeout(() => {
+                showNudge(false);
+                if (!nudgesOff()) scheduleNudge(NUDGE_GAP_MS[0] + Math.random() * (NUDGE_GAP_MS[1] - NUDGE_GAP_MS[0]));
+            }, delay);
+        }
+
+        nudgeText.addEventListener('click', () => { hideNudge(); open(); });
+        nudge.querySelector('.chew-nudge-close').addEventListener('click', e => {
+            e.stopPropagation();
+            hideNudge();
+            dismissals++;
+            // Closed twice = they don't want them: stop for the rest of this visit
+            if (dismissals >= 2) { try { sessionStorage.setItem(NUDGE_OFF_KEY, '1'); } catch (err) { /* ignore */ } }
+        });
+        bubble.addEventListener('click', hideNudge);
+
+        window.Chewbot.nudge = () => showNudge(true); // handy for testing
+        scheduleNudge(FIRST_NUDGE_MS);
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
